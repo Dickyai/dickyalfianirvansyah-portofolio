@@ -10,7 +10,7 @@ const chakraPetch = Chakra_Petch({
   display: 'swap',
 });
 
-const LOADER_TEXT = 'Welcome to My Portfolio ~ Dicky';
+const LOADER_TEXT = 'Welcome to My Portfolio';
 const REVEAL_DELAY_MS = 30;
 const HOLD_AFTER_REVEAL_MS = 180;
 const FADE_OUT_DURATION_MS = 300;
