@@ -1,0 +1,539 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+/* ==========================================================================
+   SHARED PORTFOLIO THEME
+   - Warm neutral surfaces in light mode, deep navy surfaces in dark mode.
+   ========================================================================== */
+
+:root {
+  /* Surface & Background */
+  --background: #F4F1EA;
+  --foreground: #1B2433;
+
+  --card: #FBF8F2;
+  --card-foreground: #1B2433;
+  --card-elevated: #EEE9DF;
+
+  /* Muted & Secondary Text */
+  --muted: #EEE9DF;
+  --muted-foreground: #5B6577;
+
+  /* Borders & Hairlines */
+  --border: #E0D8C8;
+  --border-subtle: #EEE9DF;
+  --border-strong: #C9BDA9;
+
+  /* Accent & Action */
+  --accent: #9A4F26;
+  --accent-secondary: #3F6FA8;
+  --accent-hover: #7D3F21;
+  --accent-foreground: #FFFFFF;
+  --accent-subtle: rgba(154, 79, 38, 0.08);
+
+  /* Focus Ring */
+  --ring: #9A4F26;
+
+  /* Glassmorphism RGBA values */
+  --glass-bg: rgba(244, 241, 234, 0.9);
+  --glass-border: rgba(224, 216, 200, 0.8);
+}
+
+.dark {
+  /* Surface & Background */
+  --background: #070A12;
+  --foreground: #EAF0FF;
+
+  --card: #0E1424;
+  --card-foreground: #EAF0FF;
+  --card-elevated: #151D30;
+
+  /* Muted & Secondary Text */
+  --muted: #111827;
+  --muted-foreground: #9AA6C4;
+
+  /* Borders & Hairlines */
+  --border: #1C2540;
+  --border-subtle: #141C2E;
+  --border-strong: #33405D;
+
+  /* Accent & Action */
+  --accent: #E0A95A;
+  --accent-secondary: #8E86D0;
+  --accent-hover: #F0BD76;
+  --accent-foreground: #070A12;
+  --accent-subtle: rgba(224, 169, 90, 0.12);
+
+  /* Focus Ring */
+  --ring: #E0A95A;
+
+  /* Glassmorphism RGBA values */
+  --glass-bg: rgba(7, 10, 18, 0.9);
+  --glass-border: rgba(28, 37, 64, 0.8);
+}
+
+/* ==========================================================================
+   TAILWIND CSS v4 THEME MAPPING & VARIANT
+   ========================================================================== */
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-card-elevated: var(--card-elevated);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+
+  --color-accent: var(--accent);
+  --color-accent-secondary: var(--accent-secondary);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-subtle: var(--accent-subtle);
+
+  --color-ring: var(--ring);
+
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-display: 'Inter', system-ui, -apple-system, sans-serif;
+
+  --text-xs: calc(0.75rem * 1.07);
+  --text-sm: calc(0.875rem * 1.07);
+  --text-base: calc(1rem * 1.07);
+  --text-lg: calc(1.125rem * 1.07);
+  --text-xl: calc(1.25rem * 1.07);
+  --text-2xl: calc(1.5rem * 1.07);
+  --text-3xl: calc(1.875rem * 1.07);
+  --text-4xl: calc(2.25rem * 1.07);
+  --text-5xl: calc(3rem * 1.07);
+  --text-6xl: calc(3.75rem * 1.07);
+  --text-7xl: calc(4.5rem * 1.07);
+  --text-8xl: calc(6rem * 1.07);
+  --text-9xl: calc(8rem * 1.07);
+}
+
+/* Instruksi Tailwind v4 agar varian dark: mendeteksi class .dark */
+@variant dark (&:where(.dark, .dark *));
+
+.dr-root {
+  --dr-bg-0: var(--background);
+  --dr-bg-1: var(--card);
+  --dr-bg-2: var(--card-elevated);
+  --dr-calm: #3F6FA8;
+  --dr-mid: #9A4F26;
+  --dr-hot: #3F6FA8;
+  --dr-core: #1B2433;
+  --dr-vignette: 0.04;
+  --dr-grain: 0.018;
+  --dr-bloom-blur: 9px;
+  --dr-bloom-opacity: 0.12;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse at 50% 34%, var(--dr-bg-1) 0%, var(--dr-bg-0) 72%);
+}
+
+.dark .dr-root {
+  --dr-calm: #8E86D0;
+  --dr-mid: #E0A95A;
+  --dr-hot: #8E86D0;
+  --dr-core: #EAF0FF;
+  --dr-vignette: 0.16;
+  --dr-grain: 0.025;
+  --dr-bloom-opacity: 0.22;
+}
+
+.dr-root--contained {
+  position: absolute;
+  inset: 0;
+}
+
+.dr-root > canvas,
+.dr-root > .dr-vignette,
+.dr-root > .dr-grain {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.dr-bloom {
+  z-index: 0;
+  opacity: var(--dr-bloom-opacity);
+  filter: blur(var(--dr-bloom-blur));
+}
+
+.dr-main {
+  z-index: 1;
+}
+
+.portfolio-data-rain .dr-main {
+  opacity: 0.72;
+}
+
+.dr-vignette {
+  z-index: 2;
+  background: radial-gradient(ellipse at center, transparent 38%, var(--background) 135%);
+  opacity: var(--dr-vignette);
+}
+
+.dr-grain {
+  z-index: 3;
+  opacity: var(--dr-grain);
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.home-portrait-halo {
+  position: absolute;
+  inset: 8% 0 12%;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 220deg,
+    transparent 0deg,
+    color-mix(in srgb, var(--accent-secondary) 68%, transparent) 58deg,
+    color-mix(in srgb, var(--accent) 68%, transparent) 148deg,
+    color-mix(in srgb, var(--accent-secondary) 56%, transparent) 244deg,
+    transparent 330deg
+  );
+  filter: blur(34px);
+  opacity: 0.8;
+  transform: scale(0.9);
+  -webkit-mask-image: radial-gradient(closest-side, transparent 48%, #000 64%, #000 77%, transparent 92%);
+  mask-image: radial-gradient(closest-side, transparent 48%, #000 64%, #000 77%, transparent 92%);
+  pointer-events: none;
+}
+
+.about-cursor-spotlight {
+  --spotlight-x: -1000px;
+  --spotlight-y: -1000px;
+  background: radial-gradient(
+    280px circle at var(--spotlight-x) var(--spotlight-y),
+    color-mix(in srgb, var(--accent-secondary) 16%, transparent),
+    transparent 72%
+  );
+  opacity: 0;
+  transition: opacity 240ms ease;
+}
+
+.about-cursor-spotlight.is-active {
+  opacity: 1;
+}
+
+.about-cursor-spotlight::after {
+  position: absolute;
+  top: var(--spotlight-y);
+  left: var(--spotlight-x);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--foreground);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--accent-secondary) 45%, transparent);
+  content: "";
+  mix-blend-mode: difference;
+  transform: translate(-50%, -50%);
+}
+
+@media (max-width: 640px) {
+  .home-portrait-halo {
+    filter: blur(28px);
+  }
+}
+
+.parallax {
+  --bg: var(--background);
+  color: var(--foreground);
+  background: var(--bg);
+}
+
+.parallax__header {
+  position: relative;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.parallax__visuals,
+.parallax__layers,
+.parallax__layer-image,
+.parallax__layer-mid,
+.parallax__fade {
+  position: absolute;
+  inset: 0;
+}
+
+.parallax__visuals,
+.parallax__layers {
+  overflow: hidden;
+}
+
+.parallax__layer-image,
+.parallax__layer-mid,
+.parallax__layer-atmosphere,
+.parallax__fade {
+  will-change: transform;
+}
+
+.parallax__layer-img,
+.parallax__ground-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 54%;
+}
+
+.parallax__layer-mid {
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 35%, color-mix(in srgb, var(--foreground) 6%, transparent) 72%, transparent);
+}
+
+.parallax__layer-atmosphere {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.parallax__fade {
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent 58%, color-mix(in srgb, var(--bg) 24%, transparent) 76%, var(--bg) 100%);
+}
+
+.parallax__ground-img {
+  object-position: center bottom;
+}
+
+.parallax__scroll-cue {
+  position: absolute;
+  z-index: 3;
+  bottom: 1rem;
+  left: 50%;
+  margin-left: -1rem;
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  color: var(--foreground);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.parallax__scroll-cue svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.music-widget__button-wrap {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: none;
+  place-items: center;
+}
+
+.music-widget__wave {
+  position: absolute;
+  inset: 0;
+  border: 1px solid color-mix(in srgb, var(--accent) 82%, transparent);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: music-wave-pulse 1.8s ease-out infinite;
+}
+
+.music-widget__wave--delayed {
+  animation-delay: 0.9s;
+}
+
+@keyframes music-wave-pulse {
+  from {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.85);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .music-widget__wave {
+    animation: none;
+    opacity: 0.35;
+    transform: scale(1.1);
+  }
+
+  .music-widget__wave--delayed {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .parallax__layer-img {
+    object-position: center 50%;
+  }
+}
+
+/* ==========================================================================
+   BASE & RESET
+   ========================================================================== */
+
+/* Lenis handles smooth scrolling; keep native scrolling immediate for reduced motion. */
+html {
+  scroll-behavior: auto;
+}
+
+/* Base body reset */
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+/* ==========================================================================
+   GLASS UTILITIES
+   ========================================================================== */
+
+.glass-panel {
+  background-color: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+}
+
+/* ==========================================================================
+   CUSTOM SCROLLBAR
+   ========================================================================== */
+
+/* Webkit (Chrome, Edge, Safari) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+  border: 2px solid var(--background);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) var(--background);
+}
+
+/* ==========================================================================
+   UTILITY & ANIMATION PRESETS
+   ========================================================================== */
+
+.font-body { font-family: 'Inter', sans-serif; }
+
+/* Blueprint Grid Background Pattern */
+.blueprint-grid {
+  background-image:
+    linear-gradient(to right, rgba(148, 163, 184, 0.12) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.12) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.dark .blueprint-grid {
+  background-image:
+    linear-gradient(to right, rgba(30, 41, 59, 0.45) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(30, 41, 59, 0.45) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+@keyframes tool-rail-scroll {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+.animate-tool-rail {
+  animation: tool-rail-scroll 25s linear infinite;
+  will-change: transform;
+}
+
+.animate-tool-rail:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-tool-rail {
+    animation: none;
+    transform: none;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .rail-duplicate {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   TOOLKIT RAIL — HOVER COLOR REVEAL (Skills.tsx)
+   Default: logo pudar & grayscale (konsisten dengan tampilan lama).
+   Hover: filter dihapus, warna asli brand software muncul.
+   Berlaku untuk <svg> (LOGO_MAP, inline JSX) MAUPUN <img> (LOCAL_LOGO_MAP,
+   file statis di public/logo/) — keduanya dipakai ToolIcon.tsx tergantung
+   sumber asetnya, jadi selector harus mencakup keduanya.
+   ========================================================================== */
+
+.tool-icon-reveal {
+  display: inline-flex;
+}
+
+.tool-icon-reveal svg,
+.tool-icon-reveal img {
+  filter: grayscale(1) opacity(0.35);
+  transition: filter 0.45s ease;
+}
+
+.tool-icon-reveal:hover svg,
+.tool-icon-reveal:hover img {
+  filter: grayscale(0) opacity(1);
+}
+
+.dark .tool-icon-reveal svg,
+.dark .tool-icon-reveal img {
+  filter: grayscale(1) opacity(0.45);
+}
+
+.dark .tool-icon-reveal:hover svg,
+.dark .tool-icon-reveal:hover img {
+  filter: grayscale(0) opacity(1);
+}
