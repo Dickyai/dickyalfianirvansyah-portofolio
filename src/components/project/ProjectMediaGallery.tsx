@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, Play, X } from 'lucide-react';
+import Image from 'next/image';
 import { ProjectThumbIcon } from './ProjectThumbIcon';
 import type { ProjectMedia, ProjectThumbType } from '../../types/project';
 
@@ -24,6 +25,7 @@ export function ProjectMediaGallery({ media, thumbType }: ProjectMediaGalleryPro
   const items = media ?? [];
   const [activeIndex, setActiveIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const carouselRef = useRef<HTMLDivElement>(null);
 
   const hasMedia = items.length > 0;
   const active = hasMedia ? items[Math.min(activeIndex, items.length - 1)] : null;
@@ -41,6 +43,22 @@ export function ProjectMediaGallery({ media, thumbType }: ProjectMediaGalleryPro
     const currentPos = imageIndices.indexOf(activeIndex);
     const nextPos = (currentPos + offset + imageIndices.length) % imageIndices.length;
     setActiveIndex(imageIndices[nextPos]);
+  };
+
+  const scrollToMedia = (index: number) => {
+    const slide = carouselRef.current?.children.item(index);
+    if (!slide) return;
+    carouselRef.current?.scrollTo({
+      left: slide.getBoundingClientRect().width * index,
+      behavior: 'smooth',
+    });
+  };
+
+  const handleCarouselScroll = () => {
+    const track = carouselRef.current;
+    if (!track) return;
+    const slideWidth = track.clientWidth;
+    if (slideWidth > 0) setActiveIndex(Math.round(track.scrollLeft / slideWidth));
   };
 
   // Kunci scroll body selama lightbox terbuka
@@ -66,6 +84,7 @@ export function ProjectMediaGallery({ media, thumbType }: ProjectMediaGalleryPro
 
   return (
     <div className="mb-10">
+      <div className="hidden lg:block">
       <div
         role={active?.type === 'image' ? 'button' : undefined}
         tabIndex={active?.type === 'image' ? 0 : undefined}
@@ -95,8 +114,14 @@ export function ProjectMediaGallery({ media, thumbType }: ProjectMediaGalleryPro
         )}
 
         {active?.type === 'image' && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={active.src} alt={active.alt ?? ''} className="absolute inset-0 w-full h-full object-cover" />
+          <Image
+            src={active.src}
+            alt={active.alt ?? ''}
+            fill
+            loading="lazy"
+            sizes="(max-width: 1279px) calc(100vw - 6rem), 944px"
+            className="object-cover"
+          />
         )}
 
         {active?.type === 'video' && (
@@ -129,11 +154,86 @@ export function ProjectMediaGallery({ media, thumbType }: ProjectMediaGalleryPro
                   <Play className="w-4 h-4 text-white" aria-hidden="true" />
                 </div>
               ) : (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={item.src} alt={item.alt ?? ''} className="w-full h-full object-cover" />
+                <Image
+                  src={item.src}
+                  alt={item.alt ?? ''}
+                  fill
+                  loading="lazy"
+                  sizes="96px"
+                  className="object-cover"
+                />
               )}
             </button>
           ))}
+        </div>
+      )}
+      </div>
+
+      {hasMedia && (
+        <div className="lg:hidden">
+          <div
+            ref={carouselRef}
+            onScroll={handleCarouselScroll}
+            role="region"
+            aria-roledescription="carousel"
+            aria-label="Project screenshots"
+            className="flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain scroll-smooth rounded-xl motion-reduce:scroll-auto"
+          >
+            {items.map((item, index) => (
+              <div
+                key={`${item.src}-${index}`}
+                className="relative aspect-video w-full shrink-0 snap-center overflow-hidden rounded-xl border border-stone-200 bg-stone-100 dark:border-[#2E323A] dark:bg-[#1B1E22]"
+              >
+                {item.type === 'image' ? (
+                  <button
+                    type="button"
+                    aria-label={`Enlarge screenshot ${index + 1}`}
+                    onClick={() => {
+                      setActiveIndex(index);
+                      setIsLightboxOpen(true);
+                    }}
+                    className="absolute inset-0 cursor-zoom-in focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                  >
+                    <Image
+                      src={item.src}
+                      alt={item.alt ?? ''}
+                      fill
+                      loading="lazy"
+                      sizes="(max-width: 1023px) calc(100vw - 2.5rem), 944px"
+                      className="object-cover"
+                    />
+                  </button>
+                ) : (
+                  <video
+                    src={item.src}
+                    controls
+                    preload="none"
+                    className="absolute inset-0 h-full w-full bg-black object-cover"
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+
+          {items.length > 1 && (
+            <div className="mt-3 flex items-center justify-center gap-2">
+              <span className="mr-1 font-mono text-xs text-muted-foreground" aria-live="polite">
+                {activeIndex + 1} / {items.length}
+              </span>
+              {items.map((item, index) => (
+                <button
+                  key={`${item.src}-indicator-${index}`}
+                  type="button"
+                  aria-label={`Go to screenshot ${index + 1}`}
+                  aria-current={index === activeIndex}
+                  onClick={() => scrollToMedia(index)}
+                  className={`h-2 w-2 rounded-full transition-colors ${
+                    index === activeIndex ? 'bg-accent' : 'bg-muted-foreground/35'
+                  }`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -181,13 +281,19 @@ export function ProjectMediaGallery({ media, thumbType }: ProjectMediaGalleryPro
             </>
           )}
 
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={active.src}
-            alt={active.alt ?? ''}
+          <div
+            className="relative h-[calc(100dvh-3rem)] w-full max-w-5xl"
             onClick={(e) => e.stopPropagation()}
-            className="max-w-full max-h-full object-contain rounded-lg select-none"
-          />
+          >
+            <Image
+              src={active.src}
+              alt={active.alt ?? ''}
+              fill
+              loading="lazy"
+              sizes="100vw"
+              className="select-none rounded-lg object-contain"
+            />
+          </div>
         </div>
       )}
     </div>

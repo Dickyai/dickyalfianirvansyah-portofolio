@@ -71,8 +71,8 @@ export function Hero({ copy, lang }: HeroProps) {
                   src="/home-portrait.png"
                   alt="Dicky Alfian Irvansyah"
                   fill
-                  priority
-                  sizes="(max-width: 768px) 85vw, 416px"
+                  loading="lazy"
+                  sizes="(max-width: 767px) calc(100vw - 2.5rem), (max-width: 1023px) 38vw, 416px"
                   className="z-10 object-contain object-bottom"
                 />
               </div>

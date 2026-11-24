@@ -108,8 +108,8 @@ export const TRANSLATIONS: Record<LangCode, Translation> = {
     music: {
       title: 'Jiraiya Theme',
       status: 'Oleh Anime Kei',
-      playLabel: 'Putar musik latar',
-      pauseLabel: 'Jeda musik latar',
+      playLabel: 'Nyalakan musik latar',
+      pauseLabel: 'Bisukan musik latar',
     },
     footer: {
       copyright: '© 2026 Dicky Alfian Irvansyah. Hak Cipta Dilindungi.',
@@ -280,8 +280,8 @@ export const TRANSLATIONS: Record<LangCode, Translation> = {
     music: {
       title: 'Jiraiya Theme',
       status: 'by Anime Kei',
-      playLabel: 'Play background music',
-      pauseLabel: 'Pause background music',
+      playLabel: 'Unmute background music',
+      pauseLabel: 'Mute background music',
     },
     footer: {
       copyright: '© 2026 Dicky Alfian Irvansyah. All Rights Reserved.',

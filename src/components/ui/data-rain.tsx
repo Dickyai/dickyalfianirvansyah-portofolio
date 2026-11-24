@@ -27,6 +27,7 @@ type RGB = readonly [number, number, number];
 /* ───────────────────────────── constants ───────────────────────────── */
 
 const MAX = 7000; // particle capacity
+const MOBILE_MAX = 350;
 const L = 19; // history points per particle
 const STEP = 1 / 60; // fixed physics step
 const PUFFS = 32; // vortex pool size
@@ -134,6 +135,11 @@ export default function DataRain(props: DataRainProps) {
     const reduced =
       typeof window.matchMedia === "function" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const mobileQuery =
+      typeof window.matchMedia === "function"
+        ? window.matchMedia("(max-width: 767px)")
+        : null;
+    const mobile = mobileQuery?.matches ?? false;
     const rand = mulberry32(7);
 
     let disposed = false;
@@ -303,7 +309,8 @@ export default function DataRain(props: DataRainProps) {
     const applyCount = (uniform: boolean): void => {
       const auto = clamp(Math.round((w * h) / 520), 1200, 5200);
       const requested = propsRef.current.count;
-      targetCount = clamp(Math.round(requested !== undefined ? requested : auto), 1, MAX);
+      const maxForViewport = mobileQuery?.matches ? MOBILE_MAX : MAX;
+      targetCount = clamp(Math.round(requested !== undefined ? requested : auto), 1, maxForViewport);
       setActive(targetCount * quality, uniform);
     };
 
@@ -674,7 +681,7 @@ export default function DataRain(props: DataRainProps) {
 
     const rebuildStatic = (): void => {
       // reduced motion: parked cursor, pre-simulated field, ONE frame
-      seedAll();
+      if (!mobile) seedAll();
       active = 0;
       applyCount(true);
       pointerActive = true;
@@ -690,7 +697,7 @@ export default function DataRain(props: DataRainProps) {
       prevSrc = 2;
       aCount = 0;
       pAlive.fill(0);
-      presim(3);
+      presim(mobile ? 0.5 : 3);
       render();
     };
 
@@ -813,7 +820,7 @@ export default function DataRain(props: DataRainProps) {
 
     resize();
     buildStyles();
-    seedAll();
+    if (!mobile) seedAll();
     applyCount(true);
     cx = pcx = tgtX = w * 0.5;
     cy = pcy = tgtY = h * 0.5;
@@ -837,7 +844,7 @@ export default function DataRain(props: DataRainProps) {
       initialised = true;
       rebuildStatic();
     } else {
-      presim(2.5);
+      presim(mobile ? 0.5 : 2.5);
       render();
       initialised = true;
       live = true;

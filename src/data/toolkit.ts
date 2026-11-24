@@ -26,7 +26,9 @@ export const ENGINEERING_TOOLKIT: ToolkitItem[] = [
   { id: 'minitab', name: 'Minitab', category: 'analytics', context: 'Statistical Analysis · SPC', iconType: 'logo', iconName: 'minitab', row: 1 },
   { id: 'spss', name: 'SPSS', category: 'analytics', context: 'Statistical Modeling', iconType: 'logo', iconName: 'spss', row: 1 },
   { id: 'pomqm', name: 'POM-QM', category: 'analytics', context: 'Operations Research · Quantitative Methods', iconType: 'logo', iconName: 'pomqm', row: 1 },
-  { id: 'gas', name: 'Apps Script', category: 'automation', context: 'Workflow Automation', iconType: 'logo', iconName: 'googleappsscript', row: 1 },
+  { id: 'pandas', name: 'Pandas', category: 'analytics', context: 'Data Analysis · Python', iconType: 'placeholder', iconName: 'pandas', row: 1 },
+  { id: 'gas', name: 'Google Apps Script', category: 'automation', context: 'Workflow Automation', iconType: 'logo', iconName: 'googleappsscript', row: 1 },
+  { id: 'excel', name: 'Microsoft Excel', category: 'data', context: 'Spreadsheet Analysis · Reporting', iconType: 'placeholder', iconName: 'excel', row: 1 },
   { id: 'access', name: 'MS Access', category: 'data', context: 'Relational Database', iconType: 'logo', iconName: 'msaccess', row: 1 },
 
   // Row 2: Design, Prototyping & Development
@@ -36,4 +38,5 @@ export const ENGINEERING_TOOLKIT: ToolkitItem[] = [
   { id: 'cura', name: 'UltiMaker Cura', category: 'slicing', context: 'Slicing · Print Prep', iconType: 'logo', iconName: 'ultimaker', row: 2 },
   { id: 'bambu', name: 'Bambu Lab', category: 'slicing', context: '3D Printing · P1P Operation', iconType: 'logo', iconName: 'bambulab', row: 2 },
   { id: 'github', name: 'GitHub', category: 'dev', context: 'Version Control', iconType: 'logo', iconName: 'github', row: 2 },
+  { id: 'nextjs', name: 'Next.js', category: 'dev', context: 'Portfolio · Web Applications', iconType: 'placeholder', iconName: 'nextjs', row: 2 },
 ];

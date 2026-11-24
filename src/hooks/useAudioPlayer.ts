@@ -13,12 +13,14 @@ export function useAudioPlayer(src: string) {
     if (!audioRef.current) return;
 
     if (isPlaying) {
+      audioRef.current.muted = false;
       audioRef.current.play().catch((err) => {
         console.warn('Autoplay diblokir atau gagal memuat audio:', err);
         setIsPlaying(false);
       });
     } else {
       audioRef.current.pause();
+      audioRef.current.muted = true;
     }
   }, [isPlaying]);
 

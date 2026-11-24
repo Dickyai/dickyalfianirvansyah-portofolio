@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { ProjectThumbIcon } from './ProjectThumbIcon';
 import type { ProjectMedia, ProjectThumbType } from '../../types/project';
@@ -27,14 +28,23 @@ const ROTATE_INTERVAL_MS = 3500;
 export function ProjectCardThumbnail({ media, thumbType }: ProjectCardThumbnailProps) {
   const images = (media ?? []).filter((item) => item.type === 'image');
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
-    if (images.length <= 1) return;
+    const desktop = window.matchMedia('(min-width: 1024px)');
+    const updateDesktop = () => setIsDesktop(desktop.matches);
+    updateDesktop();
+    desktop.addEventListener('change', updateDesktop);
+    return () => desktop.removeEventListener('change', updateDesktop);
+  }, []);
+
+  useEffect(() => {
+    if (!isDesktop || images.length <= 1) return;
     const timer = setInterval(() => {
       setActiveIndex((i) => (i + 1) % images.length);
     }, ROTATE_INTERVAL_MS);
     return () => clearInterval(timer);
-  }, [images.length]);
+  }, [images.length, isDesktop]);
 
   if (images.length === 0) {
     return (
@@ -50,15 +60,21 @@ export function ProjectCardThumbnail({ media, thumbType }: ProjectCardThumbnailP
 
   return (
     <>
-      {images.map((item, idx) => (
+      {(isDesktop ? images : images.slice(0, 1)).map((item, idx) => (
         <div
           key={idx}
           className={`absolute inset-0 transition-opacity duration-700 ${
-            idx === activeIndex ? 'opacity-100' : 'opacity-0'
+            idx === (isDesktop ? activeIndex : 0) ? 'opacity-100' : 'opacity-0'
           }`}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={item.src} alt={item.alt ?? ''} className="w-full h-full object-cover" />
+          <Image
+            src={item.src}
+            alt={item.alt ?? ''}
+            fill
+            loading="lazy"
+            sizes="(max-width: 639px) calc(100vw - 2.5rem), (max-width: 1023px) calc((100vw - 4.5rem) / 2), 33vw"
+            className="object-cover"
+          />
         </div>
       ))}
     </>

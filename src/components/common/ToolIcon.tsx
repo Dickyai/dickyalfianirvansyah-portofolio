@@ -121,9 +121,9 @@ const LOGO_MAP: Record<string, { viewBox: string; render: () => ReactNode }> = {
  * Ganti ke LOGO_MAP di atas begitu ada aset SVG resmi (upload file atau link sumbernya).
  */
 const PLACEHOLDER_MAP: Record<string, { initials: string; color: string }> = {
-  // Semua entry sebelumnya (msaccess, catia, msvisio, pomqm, ultimaker) sudah
-  // punya aset SVG sendiri di LOCAL_LOGO_MAP di bawah. Map ini sengaja dikosongkan
-  // dan dipertahankan sebagai tempat untuk software berikutnya yang belum punya aset.
+  pandas: { initials: 'Pd', color: '#150458' },
+  nextjs: { initials: 'N', color: '#000000' },
+  excel: { initials: 'X', color: '#217346' },
 };
 
 /**

@@ -22,6 +22,7 @@ export interface ParallaxImages {
 interface ParallaxComponentProps {
   images?: ParallaxImages;
   className?: string;
+  isDarkMode: boolean;
 }
 
 const DEFAULT_IMAGES: ParallaxImages = {
@@ -39,48 +40,68 @@ const LAYERS = [
 export function ParallaxComponent({
   images = DEFAULT_IMAGES,
   className = '',
+  isDarkMode,
 }: ParallaxComponentProps) {
   const parallaxRef = useRef<HTMLDivElement>(null);
   const reduceMotion = useReducedMotion();
 
   useEffect(() => {
-    if (reduceMotion || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const mobile = window.matchMedia('(max-width: 767px)');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let context: gsap.Context | undefined;
 
-    gsap.registerPlugin(ScrollTrigger);
+    const updateParallax = () => {
+      context?.revert();
+      context = undefined;
 
-    const ctx = gsap.context(() => {
-      const triggerElement = parallaxRef.current?.querySelector('[data-parallax-layers]');
-      if (!triggerElement) return;
+      if (reduceMotion || mobile.matches || reducedMotion.matches) return;
 
-      const timeline = gsap.timeline({
-        scrollTrigger: {
-          trigger: triggerElement,
-          start: '0% 0%',
-          end: '100% 0%',
-          scrub: 0,
-        },
-      });
+      gsap.registerPlugin(ScrollTrigger);
+      context = gsap.context(() => {
+        const triggerElement = parallaxRef.current?.querySelector('[data-parallax-layers]');
+        if (!triggerElement) return;
 
-      LAYERS.forEach(({ layer, yPercent }, index) => {
-        timeline.to(
-          triggerElement.querySelectorAll(`[data-parallax-layer="${layer}"]`),
-          { yPercent, ease: 'none' },
-          index === 0 ? undefined : '<'
-        );
-      });
-    }, parallaxRef);
+        const timeline = gsap.timeline({
+          scrollTrigger: {
+            trigger: triggerElement,
+            start: '0% 0%',
+            end: '100% 0%',
+            scrub: 0,
+          },
+        });
 
-    return () => ctx.revert();
+        LAYERS.forEach(({ layer, yPercent }, index) => {
+          timeline.to(
+            triggerElement.querySelectorAll(`[data-parallax-layer="${layer}"]`),
+            { yPercent, ease: 'none' },
+            index === 0 ? undefined : '<'
+          );
+        });
+      }, parallaxRef);
+    };
+
+    updateParallax();
+    mobile.addEventListener('change', updateParallax);
+    reducedMotion.addEventListener('change', updateParallax);
+
+    return () => {
+      mobile.removeEventListener('change', updateParallax);
+      reducedMotion.removeEventListener('change', updateParallax);
+      context?.revert();
+    };
   }, [reduceMotion]);
+
+  const scene = isDarkMode ? images.night : images.day;
 
   return (
     <div ref={parallaxRef} className={`parallax ${className}`.trim()}>
       <section id="parallax-cover" className="parallax__header" aria-label="Parallax cover">
         <div className="parallax__visuals">
           <div data-parallax-layers className="parallax__layers">
-            <div data-parallax-layer="1" className="parallax__layer-image dark:hidden">
+            <div data-parallax-layer="1" className="parallax__layer-image">
               <Image
-                src={images.day.sky}
+                key={scene.sky}
+                src={scene.sky}
                 alt=""
                 fill
                 priority
@@ -88,35 +109,14 @@ export function ParallaxComponent({
                 className="parallax__layer-img"
               />
             </div>
-            <div data-parallax-layer="1" className="parallax__layer-image hidden dark:block">
-              <Image
-                src={images.night.sky}
-                alt=""
-                fill
-                loading="lazy"
-                sizes="100vw"
-                className="parallax__layer-img"
-              />
-            </div>
-
             <div data-parallax-layer="2" className="parallax__layer-mid">
-              {images.day.mid && (
+              {scene.mid && (
                 <Image
-                  src={images.day.mid}
-                  alt={images.day.silhouetteAlt ?? 'A silhouette in the landscape'}
+                  src={scene.mid}
+                  alt={scene.silhouetteAlt ?? 'A silhouette in the landscape'}
                   fill
                   sizes="100vw"
-                  className="parallax__layer-img dark:hidden"
-                />
-              )}
-              {images.night.mid && (
-                <Image
-                  src={images.night.mid}
-                  alt={images.night.silhouetteAlt ?? 'A silhouette in the landscape'}
-                  fill
-                  loading="lazy"
-                  sizes="100vw"
-                  className="parallax__layer-img hidden dark:block"
+                  className="parallax__layer-img"
                 />
               )}
             </div>
@@ -124,23 +124,13 @@ export function ParallaxComponent({
             <div data-parallax-layer="3" className="parallax__layer-atmosphere" aria-hidden="true" />
 
             <div data-parallax-layer="4" className="parallax__fade">
-              {images.day.ground && (
+              {scene.ground && (
                 <Image
-                  src={images.day.ground}
+                  src={scene.ground}
                   alt=""
                   fill
                   sizes="100vw"
-                  className="parallax__ground-img dark:hidden"
-                />
-              )}
-              {images.night.ground && (
-                <Image
-                  src={images.night.ground}
-                  alt=""
-                  fill
-                  loading="lazy"
-                  sizes="100vw"
-                  className="parallax__ground-img hidden dark:block"
+                  className="parallax__ground-img"
                 />
               )}
             </div>

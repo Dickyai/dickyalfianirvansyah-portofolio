@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Music2, Pause, Play } from 'lucide-react';
+import { Music2, Volume2, VolumeX } from 'lucide-react';
 import { useAudioPlayer } from '../../hooks/useAudioPlayer';
 
 interface MusicWidgetCopy {
@@ -29,7 +29,7 @@ export function MusicWidget({ audioTrackUrl, copy }: MusicWidgetProps) {
 
   return (
     <>
-      <audio ref={audioRef} src={audioTrackUrl} loop preload="none" />
+      <audio ref={audioRef} src={audioTrackUrl} loop muted preload="none" />
 
       <div
         className="fixed bottom-4 right-4 z-40 sm:bottom-6 sm:right-6"
@@ -61,9 +61,9 @@ export function MusicWidget({ audioTrackUrl, copy }: MusicWidgetProps) {
               className="relative z-10 flex h-11 w-11 min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full border border-accent bg-accent text-accent-foreground shadow-sm transition-[background-color,transform] duration-200 hover:scale-105 hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none"
             >
               {isPlaying ? (
-                <Pause className="h-4 w-4 fill-current" aria-hidden="true" />
+                <Volume2 className="h-4 w-4" aria-hidden="true" />
               ) : (
-                <Play className="h-4 w-4 fill-current" aria-hidden="true" />
+                <VolumeX className="h-4 w-4" aria-hidden="true" />
               )}
             </button>
           </div>

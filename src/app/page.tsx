@@ -121,7 +121,7 @@ export default function PortfolioApp() {
             <ProjectDetail project={selectedProject} lang={lang} copy={t.detail} onBack={handleBackToProjects} />
           ) : (
             <div className="animate-in fade-in duration-700">
-              <ParallaxComponent />
+              <ParallaxComponent isDarkMode={isDarkMode} />
               <Hero copy={t.hero} lang={lang} />
 
               {/* B. Profile & Background */}

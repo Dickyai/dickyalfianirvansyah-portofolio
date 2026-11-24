@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { RevealSection } from '../components/common/RevealSection';
 import { Container } from '../components/common/Container';
+import { CertificateGrid } from './CertificateGrid';
 import PictureRailGallery, {
   type PictureRailGalleryLabels,
   type PictureRailItem,
@@ -54,14 +55,19 @@ export function Certifications({ heading, isDarkMode, lang }: CertificationsProp
   return (
     <RevealSection className="relative w-full py-16 sm:py-20 lg:py-24">
       <Container className="desktop-container max-w-[78rem]">
-        <PictureRailGallery
-          id="certifications"
-          items={items}
-          heading={heading}
-          labels={GALLERY_LABELS[lang]}
-          autoplay={false}
-          className="w-full"
-        />
+        <div id="certifications">
+          <div className="hidden lg:block">
+            <PictureRailGallery
+              id="certifications-desktop"
+              items={items}
+              heading={heading}
+              labels={GALLERY_LABELS[lang]}
+              autoplay={false}
+              className="w-full"
+            />
+          </div>
+          <CertificateGrid lang={lang} />
+        </div>
       </Container>
     </RevealSection>
   );
