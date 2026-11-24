@@ -3,9 +3,9 @@ import { useEffect, useState } from 'react';
 /**
  * Mengelola state dark/light mode dan sinkronisasi class `.dark`
  * ke <html> (dibaca oleh @variant dark di globals.css).
- * The initial theme is dark unless a caller overrides it.
+ * The initial theme is light unless a caller overrides it.
  */
-export function useDarkMode(defaultDark = true) {
+export function useDarkMode(defaultDark = false) {
   const [isDarkMode, setIsDarkMode] = useState(defaultDark);
 
   useEffect(() => {

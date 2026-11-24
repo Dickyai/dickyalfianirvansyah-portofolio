@@ -16,7 +16,7 @@ export function LenisProvider({ children }: { children: ReactNode }) {
     const start = () => {
       if (instance || motionPreference.matches) return;
 
-      instance = new Lenis({ autoRaf: true, anchors: true });
+      instance = new Lenis({ autoRaf: true, anchors: true, smoothWheel: false });
       setLenis(instance);
     };
 
