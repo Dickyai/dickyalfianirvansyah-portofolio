@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useDarkMode } from '../hooks/useDarkMode';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
@@ -8,7 +9,7 @@ import { MusicWidget } from '../components/common/MusicWidget';
 import { PageLoader } from '../components/common/PageLoader';
 import { ScrollToTopButton } from '../components/common/ScrollToTopButton';
 import { ParallaxComponent } from '../components/ui/parallax-scrolling';
-import DataRain, { type DataRainPalette } from '../components/ui/data-rain';
+import type { DataRainPalette } from '../components/ui/data-rain';
 import { Hero } from '../sections/Hero';
 import { About } from '../sections/About';
 import { CoreCompetencies } from '../sections/CoreCompetencies';
@@ -21,6 +22,7 @@ import { CV_DOWNLOAD_URL } from '../data/contact';
 import type { LangCode } from '../i18n/types';
 
 const AUDIO_TRACK_URL = '/music/lagu.m4a';
+const DataRain = dynamic(() => import('../components/ui/data-rain'), { ssr: false });
 const DARK_RAIN_PALETTE: DataRainPalette = {
   calm: '#8E86D0',
   mid: '#E0A95A',
@@ -38,10 +40,25 @@ export default function PortfolioApp() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isParallaxVisible, setIsParallaxVisible] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showDataRain, setShowDataRain] = useState(false);
 
   useEffect(() => {
     const savedLang = window.localStorage.getItem('portfolio-language');
     if (savedLang === 'id' || savedLang === 'en') setLang(savedLang);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
+
+  useEffect(() => {
+    const media = window.matchMedia(
+      '(min-width: 768px) and (prefers-reduced-motion: no-preference)',
+    );
+    const update = () => setShowDataRain(media.matches);
+    update();
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
   }, []);
 
   const handleLangChange = (nextLang: LangCode) => {
@@ -75,13 +92,17 @@ export default function PortfolioApp() {
 
   return (
     <div className="relative isolate min-h-[100dvh] overflow-x-clip bg-background text-foreground font-sans selection:bg-accent selection:text-accent-foreground transition-colors duration-500">
-      <DataRain
-        className="portfolio-data-rain"
-        count={1400}
-        flowSpeed={0.75}
-        obstacleRadius={72}
-        palette={rainPalette}
-      />
+      {showDataRain ? (
+        <DataRain
+          className="portfolio-data-rain"
+          count={1400}
+          flowSpeed={0.75}
+          obstacleRadius={72}
+          palette={rainPalette}
+        />
+      ) : (
+        <div className="dr-root portfolio-data-rain" aria-hidden="true" />
+      )}
       <PageLoader />
 
       <div className="relative z-10">
@@ -98,7 +119,7 @@ export default function PortfolioApp() {
           cvDownloadUrl={CV_DOWNLOAD_URL}
         />
 
-        <main className="min-h-[100dvh]">
+        <main id="main-content" tabIndex={-1} className="min-h-[100dvh]">
           <div className="animate-in fade-in duration-700">
             <ParallaxComponent isDarkMode={isDarkMode} />
             <Hero copy={t.hero} lang={lang} />

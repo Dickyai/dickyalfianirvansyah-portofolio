@@ -23,6 +23,10 @@ export function ProjectDetail({ project }: ProjectDetailProps) {
     if (savedLang === 'id' || savedLang === 'en') setLang(savedLang);
   }, []);
 
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
+
   const handleLangChange = (nextLang: LangCode) => {
     setLang(nextLang);
     window.localStorage.setItem('portfolio-language', nextLang);
@@ -40,7 +44,7 @@ export function ProjectDetail({ project }: ProjectDetailProps) {
           <ChevronLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" aria-hidden="true" />
           {copy.back}
         </Link>
-        <div className="flex items-center gap-1 rounded-full border border-border p-1" aria-label="Language">
+        <div className="flex items-center gap-1 rounded-full border border-border p-1" role="group" aria-label="Language">
           {(['id', 'en'] as const).map((option) => (
             <button
               key={option}

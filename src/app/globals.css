@@ -407,6 +407,11 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+:where(a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])):focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+
 h1,
 h2,
 h3 {
@@ -576,6 +581,17 @@ h3 {
 .dark .tool-icon-reveal svg,
 .dark .tool-icon-reveal img {
   filter: grayscale(1) opacity(0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 .dark .tool-icon-reveal:hover svg,

@@ -1,15 +1,21 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { RevealSection } from '../components/common/RevealSection';
 import { Container } from '../components/common/Container';
 import { CertificateGrid } from './CertificateGrid';
-import PictureRailGallery, {
-  type PictureRailGalleryLabels,
-  type PictureRailItem,
+import type {
+  PictureRailGalleryLabels,
+  PictureRailItem,
 } from '../components/ui/picture-rail-gallery';
 import { CERTIFICATIONS } from '../data/certifications';
 import type { LangCode } from '../i18n/types';
+
+const PictureRailGallery = dynamic(
+  () => import('../components/ui/picture-rail-gallery'),
+  { ssr: false },
+);
 
 const GALLERY_LABELS: Record<LangCode, PictureRailGalleryLabels> = {
   en: {
@@ -35,6 +41,7 @@ interface CertificationsProps {
 }
 
 export function Certifications({ heading, isDarkMode, lang }: CertificationsProps) {
+  const [isDesktop, setIsDesktop] = useState(false);
   const items = useMemo<PictureRailItem[]>(
     () =>
       CERTIFICATIONS.map((cert) => ({
@@ -52,19 +59,29 @@ export function Certifications({ heading, isDarkMode, lang }: CertificationsProp
     [isDarkMode],
   );
 
+  useEffect(() => {
+    const media = window.matchMedia('(min-width: 64rem)');
+    const update = () => setIsDesktop(media.matches);
+    update();
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
+
   return (
     <RevealSection className="relative w-full py-16 sm:py-20 lg:py-24">
       <Container className="desktop-container max-w-[78rem]">
         <div id="certifications">
           <div className="hidden lg:block">
-            <PictureRailGallery
-              id="certifications-desktop"
-              items={items}
-              heading={heading}
-              labels={GALLERY_LABELS[lang]}
-              autoplay={false}
-              className="w-full"
-            />
+            {isDesktop && (
+              <PictureRailGallery
+                id="certifications-desktop"
+                items={items}
+                heading={heading}
+                labels={GALLERY_LABELS[lang]}
+                autoplay={false}
+                className="w-full"
+              />
+            )}
           </div>
           <CertificateGrid lang={lang} />
         </div>

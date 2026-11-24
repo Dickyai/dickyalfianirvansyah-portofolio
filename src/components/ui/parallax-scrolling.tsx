@@ -4,8 +4,8 @@ import Image from 'next/image';
 import { useEffect, useRef } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowDown } from 'lucide-react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import type gsap from 'gsap';
+import { useLenis } from '../common/LenisProvider';
 
 export interface ParallaxImageSet {
   sky: string;
@@ -44,19 +44,45 @@ export function ParallaxComponent({
 }: ParallaxComponentProps) {
   const parallaxRef = useRef<HTMLDivElement>(null);
   const reduceMotion = useReducedMotion();
+  const lenis = useLenis();
 
   useEffect(() => {
     const mobile = window.matchMedia('(max-width: 767px)');
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     let context: gsap.Context | undefined;
+    let updateScrollTrigger: (() => void) | undefined;
+    let request = 0;
+    let disposed = false;
 
-    const updateParallax = () => {
+    const detachScrollUpdate = () => {
+      if (!updateScrollTrigger) return;
+      lenis?.off('scroll', updateScrollTrigger);
+      updateScrollTrigger = undefined;
+    };
+
+    const updateParallax = async () => {
+      const currentRequest = ++request;
       context?.revert();
       context = undefined;
+      detachScrollUpdate();
 
       if (reduceMotion || mobile.matches || reducedMotion.matches) return;
 
+      const [{ default: gsap }, { ScrollTrigger }] = await Promise.all([
+        import('gsap'),
+        import('gsap/ScrollTrigger'),
+      ]);
+      if (
+        disposed ||
+        currentRequest !== request ||
+        reduceMotion ||
+        mobile.matches ||
+        reducedMotion.matches
+      ) return;
+
       gsap.registerPlugin(ScrollTrigger);
+      updateScrollTrigger = () => ScrollTrigger.update();
+      lenis?.on('scroll', updateScrollTrigger);
       context = gsap.context(() => {
         const triggerElement = parallaxRef.current?.querySelector('[data-parallax-layers]');
         if (!triggerElement) return;
@@ -85,17 +111,20 @@ export function ParallaxComponent({
     reducedMotion.addEventListener('change', updateParallax);
 
     return () => {
+      disposed = true;
+      request++;
       mobile.removeEventListener('change', updateParallax);
       reducedMotion.removeEventListener('change', updateParallax);
+      detachScrollUpdate();
       context?.revert();
     };
-  }, [reduceMotion]);
+  }, [lenis, reduceMotion]);
 
   const scene = isDarkMode ? images.night : images.day;
 
   return (
     <div ref={parallaxRef} className={`parallax ${className}`.trim()}>
-      <section id="parallax-cover" className="parallax__header" aria-label="Parallax cover">
+      <div id="parallax-cover" className="parallax__header" aria-hidden="true">
         <div className="parallax__visuals">
           <div data-parallax-layers className="parallax__layers">
             <div data-parallax-layer="1" className="parallax__layer-image">
@@ -144,7 +173,7 @@ export function ParallaxComponent({
         >
           <ArrowDown />
         </motion.span>
-      </section>
+      </div>
     </div>
   );
 }

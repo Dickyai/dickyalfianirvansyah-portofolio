@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { CERTIFICATIONS } from '../data/certifications';
 import type { LangCode } from '../i18n/types';
+import { trapTabFocus } from '../components/common/trapTabFocus';
 
 interface CertificateGridProps {
   lang: LangCode;
@@ -14,6 +15,7 @@ interface CertificateGridProps {
 export function CertificateGrid({ lang }: CertificateGridProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const selected = selectedIndex === null ? null : CERTIFICATIONS[selectedIndex];
 
@@ -25,7 +27,12 @@ export function CertificateGrid({ lang }: CertificateGridProps) {
     closeButtonRef.current?.focus();
 
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setSelectedIndex(null);
+      if (event.key === 'Escape') {
+        setSelectedIndex(null);
+        return;
+      }
+
+      if (dialogRef.current) trapTabFocus(event, dialogRef.current);
     };
     document.addEventListener('keydown', closeOnEscape);
 
@@ -47,12 +54,14 @@ export function CertificateGrid({ lang }: CertificateGridProps) {
                 triggerRef.current = event.currentTarget;
                 setSelectedIndex(index);
               }}
-              aria-label={`Enlarge ${cert.name} certificate`}
+              aria-label={lang === 'id' ? `Perbesar sertifikat ${cert.name}` : `Enlarge ${cert.name} certificate`}
               className="relative block aspect-[2481/3508] w-full overflow-hidden rounded-lg border border-border bg-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               <Image
                 src={cert.thumbnail ?? '/cover.png'}
-                alt={`${cert.name} certificate issued by ${cert.issuer}, ${cert.date}`}
+                alt={lang === 'id'
+                  ? `Sertifikat ${cert.name} yang diterbitkan oleh ${cert.issuer}, ${cert.date}`
+                  : `${cert.name} certificate issued by ${cert.issuer}, ${cert.date}`}
                 fill
                 loading="lazy"
                 sizes="(max-width: 639px) calc((100vw - 2.75rem) / 2), (max-width: 1023px) calc((100vw - 5.5rem) / 2), 28rem"
@@ -67,6 +76,7 @@ export function CertificateGrid({ lang }: CertificateGridProps) {
 
       {selected && createPortal(
         <div
+          ref={dialogRef}
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4"
           role="dialog"
           aria-modal="true"
@@ -91,7 +101,9 @@ export function CertificateGrid({ lang }: CertificateGridProps) {
           >
             <Image
               src={selected.thumbnail ?? '/cover.png'}
-              alt={`${selected.name} certificate issued by ${selected.issuer}, ${selected.date}`}
+              alt={lang === 'id'
+                ? `Sertifikat ${selected.name} yang diterbitkan oleh ${selected.issuer}, ${selected.date}`
+                : `${selected.name} certificate issued by ${selected.issuer}, ${selected.date}`}
               fill
               loading="lazy"
               sizes="100vw"

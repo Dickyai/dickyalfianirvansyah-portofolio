@@ -277,7 +277,7 @@ export function Navbar({
             }`}>
               <button
                 onClick={() => onLangChange('id')}
-                aria-label="Bahasa Indonesia"
+                aria-label="ID (Bahasa Indonesia)"
                 aria-pressed={lang === 'id'}
                 className={`flex min-h-11 min-w-11 items-center justify-center rounded-full px-2 py-1 transition-all duration-200 lg:min-h-0 lg:min-w-0 ${
                   lang === 'id'
@@ -293,7 +293,7 @@ export function Navbar({
               </button>
               <button
                 onClick={() => onLangChange('en')}
-                aria-label="English"
+                aria-label="EN (English)"
                 aria-pressed={lang === 'en'}
                 className={`flex min-h-11 min-w-11 items-center justify-center rounded-full px-2 py-1 transition-all duration-200 lg:min-h-0 lg:min-w-0 ${
                   lang === 'en'

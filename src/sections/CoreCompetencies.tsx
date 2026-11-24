@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Target, Boxes, BarChart3, Activity, Cpu, BookOpen, X } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RevealSection } from '../components/common/RevealSection';
 import { Container } from '../components/common/Container';
 import { useLenis } from '../components/common/LenisProvider';
+import { trapTabFocus } from '../components/common/trapTabFocus';
 import type { Translation, CoreCompetencyItem } from '../i18n/types';
 import { PROJECTS } from '../data/projects'; // Import untuk memetakan nama project
 
@@ -20,6 +21,8 @@ const COMPETENCY_ICONS = [Target, Boxes, BarChart3, Activity, Cpu, BookOpen];
 export function CoreCompetencies({ copy }: CoreCompetenciesProps) {
   const [selectedComp, setSelectedComp] = useState<{ index: number; data: CoreCompetencyItem } | null>(null);
   const lenis = useLenis();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   // Aksesibilitas: Kunci scroll body dan tangkap tombol ESC saat modal terbuka
   useEffect(() => {
@@ -28,16 +31,23 @@ export function CoreCompetencies({ copy }: CoreCompetenciesProps) {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     lenis?.stop();
+    dialogRef.current?.querySelector<HTMLButtonElement>('button')?.focus();
 
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setSelectedComp(null);
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setSelectedComp(null);
+        return;
+      }
+
+      if (dialogRef.current) trapTabFocus(event, dialogRef.current);
     };
-    window.addEventListener('keydown', handleEsc);
+    document.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      window.removeEventListener('keydown', handleEsc);
+      document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = previousOverflow;
       lenis?.start();
+      triggerRef.current?.focus();
     };
   }, [selectedComp, lenis]);
 
@@ -66,7 +76,10 @@ export function CoreCompetencies({ copy }: CoreCompetenciesProps) {
               >
                 <button
                   type="button"
-                  onClick={() => setSelectedComp({ index: idx, data: item })}
+                  onClick={(event) => {
+                    triggerRef.current = event.currentTarget;
+                    setSelectedComp({ index: idx, data: item });
+                  }}
                   className="flex w-full items-start gap-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
                   aria-label={`View details for ${item.title}`}
                 >
@@ -76,7 +89,7 @@ export function CoreCompetencies({ copy }: CoreCompetenciesProps) {
 
                   <span className="min-w-0 flex-1">
                     <span className="mb-1 flex items-center justify-between gap-3">
-                      <span role="heading" aria-level={3} className="font-display text-[clamp(1rem,1.88vw,1.20375rem)] font-bold leading-snug text-slate-900 transition-colors group-hover:text-blue-700 dark:text-white dark:group-hover:text-blue-300">
+                      <span role="heading" aria-level={3} className="text-balance font-display text-[clamp(1rem,1.88vw,1.20375rem)] font-bold leading-snug text-slate-900 transition-colors group-hover:text-blue-700 dark:text-white dark:group-hover:text-blue-300">
                         {item.title}
                       </span>
                       <span className="shrink-0 font-mono text-[11px] text-slate-400 dark:text-slate-500">
@@ -135,6 +148,7 @@ export function CoreCompetencies({ copy }: CoreCompetenciesProps) {
             
             {/* Panel */}
             <motion.div
+              ref={dialogRef}
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}

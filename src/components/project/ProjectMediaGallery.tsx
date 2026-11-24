@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import Image from 'next/image';
 import { ProjectThumbIcon } from './ProjectThumbIcon';
+import { trapTabFocus } from '../common/trapTabFocus';
 import type { LangCode } from '../../i18n/types';
 import type { ProjectImage, ProjectThumbType } from '../../types/project';
 
@@ -17,6 +18,9 @@ export function ProjectMediaGallery({ images, lang, thumbType }: ProjectMediaGal
   const [activeIndex, setActiveIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
+  const lightboxRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const activeImage = images[activeIndex];
 
   const moveActiveImage = useCallback((offset: number) => {
@@ -26,8 +30,31 @@ export function ProjectMediaGallery({ images, lang, thumbType }: ProjectMediaGal
   const scrollToImage = (index: number) => {
     const track = carouselRef.current;
     const slide = track?.children.item(index);
-    if (!track || !slide) return;
-    track.scrollTo({ left: slide.getBoundingClientRect().width * index, behavior: 'smooth' });
+    if (!track || !(slide instanceof HTMLElement)) return;
+    const left =
+      track.scrollLeft +
+      slide.getBoundingClientRect().left -
+      track.getBoundingClientRect().left;
+    track.scrollTo({
+      left,
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+    });
+  };
+
+  const handleCarouselKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+    event.preventDefault();
+    const nextIndex = Math.max(
+      0,
+      Math.min(images.length - 1, activeIndex + (event.key === 'ArrowRight' ? 1 : -1)),
+    );
+    scrollToImage(nextIndex);
+    setActiveIndex(nextIndex);
+    if (event.target === event.currentTarget) return;
+    carouselRef.current?.children
+      .item(nextIndex)
+      ?.querySelector<HTMLButtonElement>('button')
+      ?.focus({ preventScroll: true });
   };
 
   const handleCarouselScroll = () => {
@@ -40,16 +67,22 @@ export function ProjectMediaGallery({ images, lang, thumbType }: ProjectMediaGal
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+    closeButtonRef.current?.focus();
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setIsLightboxOpen(false);
+      if (event.key === 'Escape') {
+        setIsLightboxOpen(false);
+        return;
+      }
       if (event.key === 'ArrowLeft') moveActiveImage(-1);
       if (event.key === 'ArrowRight') moveActiveImage(1);
+      if (lightboxRef.current) trapTabFocus(event, lightboxRef.current);
     };
 
-    window.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = previousOverflow;
+      triggerRef.current?.focus();
     };
   }, [isLightboxOpen, moveActiveImage]);
 
@@ -60,7 +93,10 @@ export function ProjectMediaGallery({ images, lang, thumbType }: ProjectMediaGal
           <div className="hidden lg:block">
             <button
               type="button"
-              onClick={() => setIsLightboxOpen(true)}
+              onClick={(event) => {
+                triggerRef.current = event.currentTarget;
+                setIsLightboxOpen(true);
+              }}
               aria-label={lang === 'id' ? 'Perbesar gambar proyek' : 'Enlarge project image'}
               className="group relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-xl border border-stone-200 bg-stone-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 dark:border-[#2E323A] dark:bg-[#1B1E22]"
             >
@@ -106,6 +142,8 @@ export function ProjectMediaGallery({ images, lang, thumbType }: ProjectMediaGal
             <div
               ref={carouselRef}
               onScroll={handleCarouselScroll}
+              onKeyDown={handleCarouselKeyDown}
+              tabIndex={0}
               role="region"
               aria-roledescription="carousel"
               aria-label={lang === 'id' ? 'Tangkapan layar proyek' : 'Project screenshots'}
@@ -119,7 +157,8 @@ export function ProjectMediaGallery({ images, lang, thumbType }: ProjectMediaGal
                   <button
                     type="button"
                     aria-label={`${lang === 'id' ? 'Perbesar tangkapan layar' : 'Enlarge screenshot'} ${index + 1}`}
-                    onClick={() => {
+                    onClick={(event) => {
+                      triggerRef.current = event.currentTarget;
                       setActiveIndex(index);
                       setIsLightboxOpen(true);
                     }}
@@ -147,7 +186,7 @@ export function ProjectMediaGallery({ images, lang, thumbType }: ProjectMediaGal
                     key={`${image.src}-indicator`}
                     type="button"
                     aria-label={`${lang === 'id' ? 'Ke gambar' : 'Go to image'} ${index + 1}`}
-                    aria-current={index === activeIndex}
+                    aria-current={index === activeIndex ? 'true' : undefined}
                     onClick={() => scrollToImage(index)}
                     className="flex h-11 w-11 items-center justify-center"
                   >
@@ -175,6 +214,7 @@ export function ProjectMediaGallery({ images, lang, thumbType }: ProjectMediaGal
 
       {isLightboxOpen && activeImage && (
         <div
+          ref={lightboxRef}
           onClick={() => setIsLightboxOpen(false)}
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-6"
           role="dialog"
@@ -182,6 +222,7 @@ export function ProjectMediaGallery({ images, lang, thumbType }: ProjectMediaGal
           aria-label={lang === 'id' ? 'Pratinjau gambar' : 'Image preview'}
         >
           <button
+            ref={closeButtonRef}
             type="button"
             onClick={() => setIsLightboxOpen(false)}
             className="absolute right-6 top-6 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white"
