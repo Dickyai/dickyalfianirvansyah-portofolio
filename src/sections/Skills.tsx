@@ -2,7 +2,7 @@
 
 import { ENGINEERING_TOOLKIT } from '@/data/toolkit';
 import { ToolIcon } from '@/components/common/ToolIcon';
-import { RevealSection } from '@/components/common/RevealSection';
+import { Reveal } from '@/components/common/Reveal';
 import { Container } from '@/components/common/Container';
 
 export function Skills() {
@@ -11,7 +11,7 @@ export function Skills() {
 
   return (
     <Container fullBleed className="max-w-none">
-      <RevealSection className="w-full">
+      <Reveal className="w-full">
         <div className="pointer-events-none relative w-full overflow-hidden border-y border-border/60 bg-transparent py-10 sm:py-12">
           {/* Masking gradien di kiri dan kanan agar ikon muncul/hilang secara halus (fade effect) */}
           <div className="absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-background/80 via-background/20 to-transparent"></div>
@@ -34,14 +34,14 @@ export function Skills() {
                   <ToolIcon
                     type={tool.iconType}
                     name={tool.iconName}
-                    className="w-12 h-12 sm:w-16 sm:h-16 transition-transform duration-300 hover:scale-110"
+                    className="w-12 h-12 sm:w-16 sm:h-16 transition-transform duration-premium ease-premium hover:scale-110 motion-reduce:transform-none"
                   />
                 </div>
               </div>
             ))}
           </div>
         </div>
-      </RevealSection>
+      </Reveal>
     </Container>
   );
 }

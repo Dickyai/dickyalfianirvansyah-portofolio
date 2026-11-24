@@ -841,7 +841,7 @@ export function PictureRailGallery({
       {layout.carousel && count > 1 && (
         <div className="relative z-10 mt-1 flex justify-center gap-1.5" role="group" aria-label={heading ?? "Prints"}>
           {items.map((item, i) => (
-            <button key={item.id} type="button" aria-label={item.title} aria-current={carouselIndex === i} onClick={() => { stop(); choose(i); }} className={`h-1.5 rounded-full outline-none transition-[width,background-color] duration-300 focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none ${carouselIndex === i ? "w-6 bg-foreground" : "w-1.5 bg-foreground/25 hover:bg-foreground/45"}`} />
+            <button key={item.id} type="button" aria-label={item.title} aria-current={carouselIndex === i} onClick={() => { stop(); choose(i); }} className={`h-1.5 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring ${carouselIndex === i ? "w-6 bg-foreground" : "w-1.5 bg-foreground/25 hover:bg-foreground/45"}`} />
           ))}
         </div>
       )}
@@ -958,7 +958,7 @@ function FrameArt({ item, shape, unit, lit, lightRef, glareRef, dimRef }: {
               ref={(node) => { if (node?.complete && node.naturalWidth > 0) node.dataset.loaded = "true"; }}
               onLoad={(event) => { event.currentTarget.dataset.loaded = "true"; }}
               onError={(event) => { event.currentTarget.dataset.failed = "true"; }}
-              className="pointer-events-none absolute inset-0 size-full select-none object-cover opacity-0 transition-opacity duration-500 data-[failed]:hidden data-[loaded]:opacity-100 motion-reduce:transition-none"
+              className="pointer-events-none absolute inset-0 size-full select-none object-cover opacity-0 transition-opacity duration-premium ease-premium data-[failed]:hidden data-[loaded]:opacity-100 motion-reduce:transition-none"
             />
           </span>
           <span aria-hidden="true" className="pointer-events-none absolute inset-0 block" style={{ boxShadow: `inset 0 ${(m * 0.45).toFixed(1)}px ${(m * 0.9).toFixed(1)}px color-mix(in oklab, black 30%, transparent), inset ${(m * 0.2).toFixed(1)}px 0 ${(m * 0.5).toFixed(1)}px color-mix(in oklab, black 12%, transparent), inset 0 0 0 0.5px color-mix(in oklab, black 45%, transparent)` }} />
@@ -1198,7 +1198,7 @@ function Detail({ uid, item, shape, index, total, labels, reduced, source, onLif
             </div>
           </div>
         </div>
-        <div className={`flex flex-col gap-3 text-center transition-[opacity,transform] delay-150 duration-500 motion-reduce:transition-none md:text-left ${shown ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"}`}>
+        <div className={`flex flex-col gap-3 text-center transition-[opacity,transform] delay-50 duration-premium ease-premium motion-reduce:transition-none md:text-left ${shown ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"}`}>
           <p className="font-mono text-[12px] tracking-[0.2em] text-muted-foreground">{String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}</p>
           <h3 id={titleId} className="text-[clamp(1.605rem,3.14vw,2.00625rem)] font-medium leading-[1.2] tracking-tight">{item.title}</h3>
           {byline && <p className="text-sm text-muted-foreground">{byline}</p>}

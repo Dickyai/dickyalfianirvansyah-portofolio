@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { motion, type Variants } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
+import { motion, type Variants, useReducedMotion } from 'framer-motion';
 import { Download, Menu, Moon, Sun, X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useLenis } from '../common/LenisProvider';
@@ -20,6 +20,14 @@ interface NavbarProps {
   cvDownloadUrl: string;
 }
 
+const NAV_ITEMS = [
+  { href: '#hero', label: 'HOME' },
+  { href: '#about', label: 'ABOUT' },
+  { href: '#competencies', label: 'SKILLS' },
+  { href: '#projects', label: 'PROJECTS' },
+  { href: '#certifications', label: 'CERTIFICATIONS' },
+];
+
 // --- Animasi 3D Hover & Glow ---
 const glowVariants: Variants = {
   initial: { opacity: 0, scale: 0.8 },
@@ -27,8 +35,8 @@ const glowVariants: Variants = {
     opacity: 1,
     scale: 2,
     transition: {
-      opacity: { duration: 0.5, ease: [0.4, 0, 0.2, 1] },
-      scale: { duration: 0.5, type: 'spring', stiffness: 300, damping: 25 },
+      opacity: { duration: 0.24, ease: [0.4, 0, 0.2, 1] },
+      scale: { duration: 0.24, ease: [0.22, 1, 0.36, 1] },
     },
   },
 };
@@ -46,18 +54,33 @@ export function Navbar({
   cvDownloadUrl,
 }: NavbarProps) {
   const lenis = useLenis();
+  const reduceMotion = useReducedMotion();
   const drawerRef = useRef<HTMLDivElement>(null);
   const brandRef = useRef<HTMLAnchorElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const toggleMobileMenuRef = useRef(onToggleMobileMenu);
   toggleMobileMenuRef.current = onToggleMobileMenu;
-  const navItems = [
-    { href: '#hero', label: 'HOME' },
-    { href: '#about', label: 'ABOUT' },
-    { href: '#competencies', label: 'SKILLS' },
-    { href: '#projects', label: 'PROJECTS' },
-    { href: '#certifications', label: 'CERTIFICATIONS' },
-  ];
+  const [activeSection, setActiveSection] = useState('hero');
+
+  useEffect(() => {
+    if (!('IntersectionObserver' in window)) return;
+
+    const sections = NAV_ITEMS.map(({ href }) => document.querySelector<HTMLElement>(href)).filter(
+      (section): section is HTMLElement => section !== null,
+    );
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const activeEntry = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+        if (activeEntry?.target instanceof HTMLElement) setActiveSection(activeEntry.target.id);
+      },
+      { rootMargin: '-20% 0px -65% 0px', threshold: 0 },
+    );
+    sections.forEach((section) => observer.observe(section));
+
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (!isMobileMenuOpen) return;
@@ -146,9 +169,9 @@ export function Navbar({
       role={isMobileMenuOpen ? 'dialog' : undefined}
       aria-modal={isMobileMenuOpen || undefined}
       aria-label={isMobileMenuOpen ? 'Primary navigation' : undefined}
-      initial={isMobileMenuOpen ? { opacity: 0 } : undefined}
+      initial={isMobileMenuOpen && !reduceMotion ? { opacity: 0 } : false}
       animate={isMobileMenuOpen ? { opacity: 1 } : undefined}
-      transition={{ duration: 0.2 }}
+      transition={{ duration: reduceMotion ? 0 : 0.24 }}
       className={`pointer-events-auto ${
         isMobileMenuOpen
           ? `fixed bottom-0 left-[env(safe-area-inset-left)] right-[env(safe-area-inset-right)] z-[60] flex max-h-[85dvh] flex-col space-y-2 overflow-y-auto rounded-t-3xl p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] font-mono text-sm shadow-2xl lg:hidden ${
@@ -161,7 +184,7 @@ export function Navbar({
             }`
       }`}
     >
-      {navItems.map((item, index) => (
+      {NAV_ITEMS.map((item, index) => (
         <motion.div
           key={item.href}
           className={`group relative block cursor-pointer overflow-visible ${
@@ -169,7 +192,7 @@ export function Navbar({
           }`}
           style={{ perspective: '600px' }}
           initial="initial"
-          whileHover="hover"
+          whileHover={reduceMotion ? undefined : 'hover'}
         >
           <motion.div
             className="absolute inset-0 z-0 pointer-events-none rounded-full"
@@ -187,9 +210,14 @@ export function Navbar({
               if (isMobileMenuOpen) onToggleMobileMenu();
             }}
             data-label={isMobileMenuOpen ? undefined : item.label}
-            initial={isMobileMenuOpen ? { opacity: 0, x: -10 } : undefined}
+            aria-current={activeSection === item.href.slice(1) ? 'location' : undefined}
+            initial={isMobileMenuOpen && !reduceMotion ? { opacity: 0, x: -10 } : false}
             animate={isMobileMenuOpen ? { opacity: 1, x: 0 } : undefined}
-            transition={isMobileMenuOpen ? { delay: index * 0.05 } : undefined}
+            transition={
+              isMobileMenuOpen
+                ? { duration: reduceMotion ? 0 : 0.24, delay: reduceMotion ? 0 : index * 0.05 }
+                : undefined
+            }
             className={
               isMobileMenuOpen
                 ? `flex min-h-11 w-full items-center rounded-xl px-4 py-3 font-medium transition-colors ${
@@ -226,20 +254,32 @@ export function Navbar({
   );
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-[calc(1rem+env(safe-area-inset-top))] pb-4 pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))] pointer-events-none transition-all duration-300 sm:pl-[calc(1.5rem+env(safe-area-inset-left))] sm:pr-[calc(1.5rem+env(safe-area-inset-right))]">
+    <header className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-[calc(1rem+env(safe-area-inset-top))] pb-4 pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))] pointer-events-none transition-[opacity,transform] duration-premium ease-premium sm:pl-[calc(1.5rem+env(safe-area-inset-left))] sm:pr-[calc(1.5rem+env(safe-area-inset-right))]">
       <motion.nav
-        initial={{ y: -20, opacity: 0 }}
+        initial={false}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
-        className={`pointer-events-auto relative z-20 mx-auto w-full max-w-6xl rounded-full transition-all duration-500 ${
+        transition={{ duration: reduceMotion ? 0 : 0.24, ease: [0.22, 1, 0.36, 1] }}
+        className={`pointer-events-auto relative z-20 mx-auto w-full max-w-6xl rounded-full transition-[opacity,transform] duration-premium ease-premium ${
           isOnCover
-            ? 'bg-slate-950/30 backdrop-blur-md shadow-lg shadow-black/10 border border-white/15 py-2.5 px-4 sm:px-6'
+            ? 'shadow-lg shadow-black/10 border border-white/15 py-2.5 px-4 sm:px-6'
             : isScrolled
-            ? 'glass-panel shadow-lg shadow-slate-900/5 dark:shadow-black/40 border border-slate-200 dark:border-slate-800 py-2.5 px-4 sm:px-6'
-            : 'bg-transparent py-3 px-2 sm:px-4 border border-transparent'
+            ? 'shadow-lg shadow-slate-900/5 dark:shadow-black/40 border border-slate-200 dark:border-slate-800 py-2.5 px-4 sm:px-6'
+            : 'py-3 px-2 sm:px-4 border border-transparent'
         }`}
       >
-        <div className="flex items-center justify-between">
+        <span
+          aria-hidden="true"
+          className={`pointer-events-none absolute inset-0 z-0 rounded-full bg-slate-950/30 backdrop-blur-md transition-opacity duration-premium ease-premium ${
+            isOnCover ? 'opacity-100' : 'opacity-0'
+          }`}
+        />
+        <span
+          aria-hidden="true"
+          className={`pointer-events-none absolute inset-0 z-0 rounded-full bg-[var(--glass-bg)] backdrop-blur-[16px] transition-opacity duration-premium ease-premium ${
+            !isOnCover && isScrolled ? 'opacity-100' : 'opacity-0'
+          }`}
+        />
+        <div className="relative z-10 flex items-center justify-between">
           {/* Logo / Brand */}
           <a
             ref={brandRef}
@@ -321,10 +361,10 @@ export function Navbar({
             >
               <motion.div
                 key={isDarkMode ? 'dark' : 'light'}
-                initial={{ rotate: -90, scale: 0.7, opacity: 0 }}
+                initial={reduceMotion ? false : { rotate: -90, scale: 0.7, opacity: 0 }}
                 animate={{ rotate: 0, scale: 1, opacity: 1 }}
                 exit={{ rotate: 90, scale: 0.7, opacity: 0 }}
-                transition={{ duration: 0.2 }}
+                transition={{ duration: reduceMotion ? 0 : 0.2 }}
               >
                 {!isDarkMode ? (
                   <Sun className="w-4 h-4 text-amber-500" />
@@ -359,8 +399,9 @@ export function Navbar({
             <motion.button
               type="button"
               aria-label="Close navigation"
-              initial={{ opacity: 0 }}
+              initial={reduceMotion ? false : { opacity: 0 }}
               animate={{ opacity: 1 }}
+              transition={{ duration: reduceMotion ? 0 : 0.24 }}
               className="pointer-events-auto fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
               onClick={onToggleMobileMenu}
             />

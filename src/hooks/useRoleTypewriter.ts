@@ -9,7 +9,11 @@ type RolePhase = 'building' | 'holding' | 'removing';
  * @param resetKey  Nilai yang, saat berubah, mereset animasi dari awal.
  *                  Di page.tsx lama ini adalah `lang` (ganti bahasa = reset animasi).
  */
-export function useRoleTypewriter(roles: string[], resetKey: string | number) {
+export function useRoleTypewriter(
+  roles: string[],
+  resetKey: string | number,
+  enabled = true,
+) {
   const [roleIndex, setRoleIndex] = useState(0);
   const [visibleChars, setVisibleChars] = useState(0);
   const [rolePhase, setRolePhase] = useState<RolePhase>('building');
@@ -21,6 +25,8 @@ export function useRoleTypewriter(roles: string[], resetKey: string | number) {
   }, [resetKey]);
 
   useEffect(() => {
+    if (!enabled || roles.length === 0) return;
+
     const fullText = roles[roleIndex % roles.length];
     let timeout: ReturnType<typeof setTimeout>;
 
@@ -44,7 +50,7 @@ export function useRoleTypewriter(roles: string[], resetKey: string | number) {
     }
 
     return () => clearTimeout(timeout);
-  }, [rolePhase, visibleChars, roleIndex, roles]);
+  }, [enabled, rolePhase, visibleChars, roleIndex, roles]);
 
   const fullRoleText = roles[roleIndex % roles.length];
   const displayedText = fullRoleText.slice(0, visibleChars);

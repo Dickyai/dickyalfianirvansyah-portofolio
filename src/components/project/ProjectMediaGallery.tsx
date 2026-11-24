@@ -17,11 +17,24 @@ interface ProjectMediaGalleryProps {
 export function ProjectMediaGallery({ images, lang, thumbType }: ProjectMediaGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [isLightboxMounted, setIsLightboxMounted] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
   const lightboxRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const activeImage = images[activeIndex];
+
+  useEffect(() => {
+    if (isLightboxOpen) {
+      setIsLightboxMounted(true);
+      return;
+    }
+
+    if (!isLightboxMounted) return;
+    const closeDelay = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 240;
+    const timer = window.setTimeout(() => setIsLightboxMounted(false), closeDelay);
+    return () => window.clearTimeout(timer);
+  }, [isLightboxOpen, isLightboxMounted]);
 
   const moveActiveImage = useCallback((offset: number) => {
     setActiveIndex((index) => (index + offset + images.length) % images.length);
@@ -212,14 +225,18 @@ export function ProjectMediaGallery({ images, lang, thumbType }: ProjectMediaGal
         </div>
       )}
 
-      {isLightboxOpen && activeImage && (
+      {isLightboxMounted && activeImage && (
         <div
           ref={lightboxRef}
           onClick={() => setIsLightboxOpen(false)}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-6"
-          role="dialog"
-          aria-modal="true"
+          className={`fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-6 transition-opacity duration-premium ease-premium motion-reduce:transition-none ${
+            isLightboxOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
+          }`}
+          role={isLightboxOpen ? 'dialog' : undefined}
+          aria-modal={isLightboxOpen || undefined}
           aria-label={lang === 'id' ? 'Pratinjau gambar' : 'Image preview'}
+          aria-hidden={!isLightboxOpen}
+          inert={!isLightboxOpen}
         >
           <button
             ref={closeButtonRef}
@@ -258,7 +275,12 @@ export function ProjectMediaGallery({ images, lang, thumbType }: ProjectMediaGal
             </>
           )}
 
-          <div className="relative h-[calc(100dvh-3rem)] w-full max-w-5xl" onClick={(event) => event.stopPropagation()}>
+          <div
+            className={`relative h-[calc(100dvh-3rem)] w-full max-w-5xl transition-[opacity,transform] duration-premium ease-premium motion-reduce:transition-none ${
+              isLightboxOpen ? 'scale-100 opacity-100' : 'scale-[0.98] opacity-0'
+            }`}
+            onClick={(event) => event.stopPropagation()}
+          >
             <Image
               src={activeImage.src}
               alt={activeImage.alt[lang]}

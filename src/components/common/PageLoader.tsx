@@ -1,8 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Chakra_Petch } from 'next/font/google';
-import { EncryptedText } from '../ui/encrypted-text';
 
 const chakraPetch = Chakra_Petch({
   subsets: ['latin'],
@@ -11,42 +10,45 @@ const chakraPetch = Chakra_Petch({
 });
 
 const LOADER_TEXT = 'Welcome to My Portfolio';
-const REVEAL_DELAY_MS = 30;
-const HOLD_AFTER_REVEAL_MS = 180;
-const FADE_OUT_DURATION_MS = 300;
+const LOADER_DURATION_MS = 450;
+const FADE_OUT_DURATION_MS = 240;
 
 /**
  * Splash screen saat portofolio pertama kali dibuka.
  * Dirancang responsif dan cepat agar pengunjung tidak merasa tertahan di layar loading.
  */
 export function PageLoader() {
+  const [isMounted, setIsMounted] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [isFadingOut, setIsFadingOut] = useState(false);
-  const [hasTextRevealed, setHasTextRevealed] = useState(false);
-  const handleTextRevealed = useCallback(() => setHasTextRevealed(true), []);
 
   useEffect(() => {
-    if (!hasTextRevealed) return;
-
-    const fadeTimer = window.setTimeout(() => {
-      setIsFadingOut(true);
-    }, HOLD_AFTER_REVEAL_MS);
-
-    const removeTimer = window.setTimeout(() => {
+    setIsMounted(true);
+    if (
+      document.readyState === 'complete' ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
       setIsVisible(false);
-    }, HOLD_AFTER_REVEAL_MS + FADE_OUT_DURATION_MS);
+      return;
+    }
+
+    const fadeTimer = window.setTimeout(() => setIsFadingOut(true), LOADER_DURATION_MS);
+    const removeTimer = window.setTimeout(
+      () => setIsVisible(false),
+      LOADER_DURATION_MS + FADE_OUT_DURATION_MS,
+    );
 
     return () => {
       clearTimeout(fadeTimer);
       clearTimeout(removeTimer);
     };
-  }, [hasTextRevealed]);
+  }, []);
 
-  if (!isVisible) return null;
+  if (!isMounted || !isVisible) return null;
 
   return (
     <div
-      className={`fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[#18191B] transition-opacity duration-300 ${
+      className={`fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[#18191B] transition-opacity duration-premium ease-premium ${
         isFadingOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
     >
@@ -56,14 +58,7 @@ export function PageLoader() {
           aria-live="polite"
           className={`${chakraPetch.className} text-xl sm:text-2xl md:text-3xl font-bold tracking-tight`}
         >
-          <EncryptedText
-            text={LOADER_TEXT}
-            revealDelayMs={REVEAL_DELAY_MS}
-            flipDelayMs={30}
-            onComplete={handleTextRevealed}
-            encryptedClassName="text-[#8A9099]"
-            revealedClassName="text-white drop-shadow-md"
-          />
+          {LOADER_TEXT}
         </p>
       </div>
     </div>

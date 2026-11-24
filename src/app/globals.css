@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 /* ==========================================================================
@@ -99,9 +98,9 @@
 
   --color-ring: var(--ring);
 
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-  --font-display: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), 'Fira Code', monospace;
+  --font-display: var(--font-inter), system-ui, -apple-system, sans-serif;
 
   --text-xs: calc(0.75rem * 1.07);
   --text-sm: calc(0.875rem * 1.07);
@@ -118,8 +117,34 @@
   --text-9xl: calc(8rem * 1.07);
 }
 
+@theme {
+  --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-premium: 240ms;
+}
+
 /* Instruksi Tailwind v4 agar varian dark: mendeteksi class .dark */
 @variant dark (&:where(.dark, .dark *));
+
+[data-reveal="pending"] {
+  opacity: 0;
+  transform: translate3d(0, 12px, 0);
+}
+
+[data-reveal="visible"] {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition:
+    opacity var(--duration-premium) var(--ease-premium) var(--reveal-delay, 0ms),
+    transform var(--duration-premium) var(--ease-premium) var(--reveal-delay, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
 
 .dr-root {
   --dr-bg-0: var(--background);
@@ -232,8 +257,8 @@
 
 .about-cursor-spotlight::after {
   position: absolute;
-  top: var(--spotlight-y);
-  left: var(--spotlight-x);
+  top: 0;
+  left: 0;
   width: 8px;
   height: 8px;
   border-radius: 50%;
@@ -241,7 +266,7 @@
   box-shadow: 0 0 14px color-mix(in srgb, var(--accent-secondary) 45%, transparent);
   content: "";
   mix-blend-mode: difference;
-  transform: translate(-50%, -50%);
+  transform: translate3d(var(--spotlight-x), var(--spotlight-y), 0) translate(-50%, -50%);
 }
 
 @media (max-width: 640px) {
@@ -335,6 +360,29 @@
   height: 1.25rem;
 }
 
+.nav-flip-link::before {
+  position: absolute;
+  right: 25%;
+  bottom: 0.15rem;
+  left: 25%;
+  height: 1px;
+  border-radius: 9999px;
+  background: currentColor;
+  content: "";
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition:
+    opacity var(--duration-premium) var(--ease-premium),
+    transform var(--duration-premium) var(--ease-premium);
+  pointer-events: none;
+}
+
+.nav-flip-link[aria-current="location"]::before {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
 .music-widget__button-wrap {
   position: relative;
   isolation: isolate;
@@ -391,9 +439,19 @@
    BASE & RESET
    ========================================================================== */
 
-/* Lenis handles smooth scrolling; keep native scrolling immediate for reduced motion. */
+/* Lenis handles custom anchor scrolling; native anchors remain smooth without it. */
 html {
-  scroll-behavior: auto;
+  scroll-behavior: smooth;
+}
+
+:where(section[id], #certifications) {
+  scroll-margin-top: 6rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 /* Base body reset */
@@ -433,12 +491,16 @@ h3 {
   opacity: 0;
   transform: rotateX(90deg);
   transform-origin: center top;
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transition:
+    opacity var(--duration-premium) var(--ease-premium),
+    transform var(--duration-premium) var(--ease-premium);
   pointer-events: none;
 }
 
 .nav-flip-link > span {
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transition:
+    opacity var(--duration-premium) var(--ease-premium),
+    transform var(--duration-premium) var(--ease-premium);
   transform-origin: center bottom;
 }
 
@@ -509,7 +571,7 @@ h3 {
    UTILITY & ANIMATION PRESETS
    ========================================================================== */
 
-.font-body { font-family: 'Inter', sans-serif; }
+.font-body { font-family: var(--font-inter), sans-serif; }
 
 /* Blueprint Grid Background Pattern */
 .blueprint-grid {
@@ -570,7 +632,7 @@ h3 {
 .tool-icon-reveal svg,
 .tool-icon-reveal img {
   filter: grayscale(1) opacity(0.35);
-  transition: filter 0.45s ease;
+  transition: filter var(--duration-premium) var(--ease-premium);
 }
 
 .tool-icon-reveal:hover svg,

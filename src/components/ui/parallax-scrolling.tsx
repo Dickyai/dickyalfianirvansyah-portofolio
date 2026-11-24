@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useEffect, useRef } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { useReducedMotion } from 'framer-motion';
 import { ArrowDown } from 'lucide-react';
 import type gsap from 'gsap';
 import { useLenis } from '../common/LenisProvider';
@@ -165,14 +165,9 @@ export function ParallaxComponent({
             </div>
           </div>
         </div>
-        <motion.span
-          className="parallax__scroll-cue"
-          animate={reduceMotion ? undefined : { y: [0, 5, 0] }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
-          aria-hidden="true"
-        >
+        <span className="parallax__scroll-cue" aria-hidden="true">
           <ArrowDown />
-        </motion.span>
+        </span>
       </div>
     </div>
   );

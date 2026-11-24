@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Search, ArrowUpRight, X } from 'lucide-react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
-import { RevealSection } from '../components/common/RevealSection';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { Reveal } from '../components/common/Reveal';
 import { Container } from '../components/common/Container';
 import { ProjectCardThumbnail } from '../components/project/ProjectCardThumbnail';
 import { STATUS_BADGE_STYLES, getStatusLabel } from '../components/project/projectStatusStyles';
@@ -24,6 +24,38 @@ type FilterType = 'all' | ProjectCategory;
 export function Projects({ heading, searchCopy, statusLabels, lang }: ProjectsProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
+  const [gridMinHeight, setGridMinHeight] = useState<number>();
+  const [hasMounted, setHasMounted] = useState(false);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const transitionTimer = useRef<number | null>(null);
+  const reduceMotion = useReducedMotion();
+
+  useEffect(() => setHasMounted(true), []);
+
+  const holdGridHeight = (update: () => void) => {
+    setGridMinHeight(gridRef.current?.getBoundingClientRect().height ?? 0);
+    update();
+    if (transitionTimer.current !== null) window.clearTimeout(transitionTimer.current);
+    transitionTimer.current = window.setTimeout(
+      () => setGridMinHeight(undefined),
+      reduceMotion ? 0 : 280,
+    );
+  };
+
+  useLayoutEffect(() => {
+    if (gridMinHeight === undefined || !gridRef.current) return;
+    const nextHeight = gridRef.current.getBoundingClientRect().height;
+    setGridMinHeight((current) =>
+      current === undefined ? undefined : Math.max(current, nextHeight),
+    );
+  }, [activeFilter, gridMinHeight, searchQuery]);
+
+  useEffect(
+    () => () => {
+      if (transitionTimer.current !== null) window.clearTimeout(transitionTimer.current);
+    },
+    [],
+  );
 
   const filterTabs: { id: FilterType; label: string }[] = [
     { id: 'all', label: searchCopy.filters.all },
@@ -47,7 +79,7 @@ export function Projects({ heading, searchCopy, statusLabels, lang }: ProjectsPr
       id="projects"
       className="relative py-16 sm:py-20 lg:py-24"
     >
-      <RevealSection className="relative z-10 w-full">
+      <Reveal className="relative z-10 w-full">
         <Container className="desktop-container max-w-[78rem]">
         {/* Section Header & Search Row */}
         <div className="mb-8">
@@ -69,13 +101,13 @@ export function Projects({ heading, searchCopy, statusLabels, lang }: ProjectsPr
                 aria-label={searchCopy.searchPlaceholder}
                 placeholder={searchCopy.searchPlaceholder}
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => holdGridHeight(() => setSearchQuery(e.target.value))}
                 className="w-full bg-card border border-border rounded-full py-2.5 pl-10 pr-10 text-xs sm:text-sm font-body focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 text-slate-900 dark:text-white transition-all shadow-sm"
               />
               {searchQuery && (
                 <button
                   type="button"
-                  onClick={() => setSearchQuery('')}
+                  onClick={() => holdGridHeight(() => setSearchQuery(''))}
                   className="absolute inset-y-0 right-1 pr-2 min-w-[36px] min-h-[36px] flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-white"
                   aria-label="Clear search"
                 >
@@ -94,7 +126,7 @@ export function Projects({ heading, searchCopy, statusLabels, lang }: ProjectsPr
               <button
                 key={tab.id}
                 type="button"
-                onClick={() => setActiveFilter(tab.id)}
+                onClick={() => holdGridHeight(() => setActiveFilter(tab.id))}
                 aria-pressed={isActive}
                 className={`relative px-4 py-2 min-h-[44px] rounded-full font-mono text-xs font-semibold tracking-wider transition-colors duration-200 flex items-center justify-center ${
                   isActive
@@ -106,7 +138,11 @@ export function Projects({ heading, searchCopy, statusLabels, lang }: ProjectsPr
                   <motion.div
                     layoutId="projectFilterPill"
                     className="absolute inset-0 rounded-full bg-blue-600 shadow-md shadow-blue-600/20"
-                    transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                  transition={
+                    reduceMotion
+                      ? { duration: 0 }
+                      : { type: 'tween', duration: 0.24, ease: [0.22, 1, 0.36, 1] }
+                  }
                   />
                 )}
                 <span className="relative z-10">{tab.label}</span>
@@ -115,25 +151,30 @@ export function Projects({ heading, searchCopy, statusLabels, lang }: ProjectsPr
           })}
         </div>
 
-        <motion.div layout className="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2 lg:grid-cols-3">
-          <AnimatePresence>
+        <motion.div
+          ref={gridRef}
+          style={{ minHeight: gridMinHeight === undefined ? undefined : `${gridMinHeight}px` }}
+          className="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2 lg:grid-cols-3"
+        >
+          <AnimatePresence initial={false}>
             {filteredProjects.length > 0 ? (
-              filteredProjects.map((project) => (
+              filteredProjects.map((project, index) => (
                 <motion.div
                   key={project.slug}
-                  layout
-                  initial={{ opacity: 0, scale: 0.95 }}
+                  layout="position"
+                  initial={hasMounted && !reduceMotion ? { opacity: 0, scale: 0.95 } : false}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.25 }}
+                  transition={{ duration: reduceMotion ? 0 : 0.24 }}
                 >
+                  <Reveal staggerIndex={index}>
                   <Link
                     href={`/projects/${project.slug}`}
                     aria-label={`${lang === 'id' ? 'Lihat detail proyek' : 'View project details'}: ${project.title}`}
-                    className="group block w-full text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
+                    className="group block w-full origin-center text-left transition-[transform,opacity] duration-premium ease-premium hover:-translate-y-1 hover:shadow-lg focus-visible:-translate-y-1 focus-visible:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent active:scale-[0.98] motion-reduce:transform-none"
                   >
                     <div className="relative aspect-[1.42] overflow-hidden border-y border-border/70 bg-card/20">
-                      <div className="absolute inset-0 transition-transform duration-500 ease-out group-hover:scale-[1.03]">
+                      <div className="absolute inset-0 transition-transform duration-premium ease-premium group-hover:scale-[1.03] motion-reduce:transform-none">
                           <ProjectCardThumbnail images={project.images} lang={lang} thumbType={project.thumbType} />
                       </div>
                       <span
@@ -165,12 +206,16 @@ export function Projects({ heading, searchCopy, statusLabels, lang }: ProjectsPr
                       </div>
                     </div>
                   </Link>
+                  </Reveal>
                 </motion.div>
               ))
             ) : (
               <motion.div
-                initial={{ opacity: 0 }}
+                key="no-projects"
+                initial={hasMounted && !reduceMotion ? { opacity: 0 } : false}
                 animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: reduceMotion ? 0 : 0.24 }}
                 className="col-span-full border-y border-border/70 py-16 text-center font-mono text-sm text-slate-500 dark:text-slate-400"
               >
                 {searchCopy.noResultsPrefix} &quot;{searchQuery || filterTabs.find((tab) => tab.id === activeFilter)?.label}&quot;
@@ -179,7 +224,7 @@ export function Projects({ heading, searchCopy, statusLabels, lang }: ProjectsPr
           </AnimatePresence>
         </motion.div>
         </Container>
-      </RevealSection>
+      </Reveal>
     </section>
   );
 }

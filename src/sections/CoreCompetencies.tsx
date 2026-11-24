@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { Target, Boxes, BarChart3, Activity, Cpu, BookOpen, X } from 'lucide-react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
-import { RevealSection } from '../components/common/RevealSection';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { Reveal } from '../components/common/Reveal';
 import { Container } from '../components/common/Container';
 import { useLenis } from '../components/common/LenisProvider';
 import { trapTabFocus } from '../components/common/trapTabFocus';
@@ -21,6 +21,7 @@ const COMPETENCY_ICONS = [Target, Boxes, BarChart3, Activity, Cpu, BookOpen];
 export function CoreCompetencies({ copy }: CoreCompetenciesProps) {
   const [selectedComp, setSelectedComp] = useState<{ index: number; data: CoreCompetencyItem } | null>(null);
   const lenis = useLenis();
+  const reduceMotion = useReducedMotion();
   const dialogRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -56,7 +57,7 @@ export function CoreCompetencies({ copy }: CoreCompetenciesProps) {
       id="competencies"
       className="relative py-16 sm:py-20 lg:py-20"
     >
-      <RevealSection className="w-full">
+      <Reveal className="w-full">
         <Container className="desktop-container max-w-[78rem]">
         <div className="mb-8 border-b border-border/80 pb-5">
           <h2 className="font-display text-[clamp(1.605rem,3.77vw,2.4075rem)] font-extrabold leading-[1.111] tracking-tight text-slate-900 dark:text-white">
@@ -68,19 +69,15 @@ export function CoreCompetencies({ copy }: CoreCompetenciesProps) {
           {copy.items.map((item, idx) => {
             const Icon = COMPETENCY_ICONS[idx % COMPETENCY_ICONS.length];
             return (
-              <motion.article
-                key={idx}
-                whileHover={{ x: 4 }}
-                transition={{ duration: 0.18 }}
-                className="group min-h-[150px] border-b border-border/80 py-6"
-              >
+              <Reveal key={idx} staggerIndex={idx}>
+              <article className="group min-h-[150px] border-b border-border/80 py-6 transition-transform duration-premium ease-premium hover:-translate-y-1 hover:shadow-lg focus-within:-translate-y-1 focus-within:shadow-md active:scale-[0.98] motion-reduce:transform-none">
                 <button
                   type="button"
                   onClick={(event) => {
                     triggerRef.current = event.currentTarget;
                     setSelectedComp({ index: idx, data: item });
                   }}
-                  className="flex w-full items-start gap-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
+                  className="flex w-full items-start gap-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 active:scale-[0.98] motion-reduce:transform-none"
                   aria-label={`View details for ${item.title}`}
                 >
                   <span className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center text-blue-600 transition-colors group-hover:text-blue-800 dark:text-blue-400 dark:group-hover:text-blue-300">
@@ -124,23 +121,30 @@ export function CoreCompetencies({ copy }: CoreCompetenciesProps) {
                     })}
                   </div>
                 )}
-              </motion.article>
+              </article>
+              </Reveal>
             );
           })}
         </div>
         </Container>
-      </RevealSection>
+      </Reveal>
 
       {/* Side Drawer / Modal Detail */}
       <AnimatePresence>
         {selectedComp && (
-          <div className="fixed inset-0 z-[100] flex justify-end">
+          <motion.div
+            className="fixed inset-0 z-[100] flex justify-end"
+            initial={reduceMotion ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: reduceMotion ? 0 : 0.24 }}
+          >
             {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: reduceMotion ? 0 : 0.2 }}
               className="absolute inset-0 bg-slate-900/60 dark:bg-black/60 backdrop-blur-sm"
               onClick={() => setSelectedComp(null)}
               aria-hidden="true"
@@ -152,7 +156,11 @@ export function CoreCompetencies({ copy }: CoreCompetenciesProps) {
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              transition={
+                reduceMotion
+                  ? { duration: 0 }
+                  : { type: 'tween', duration: 0.28, ease: [0.22, 1, 0.36, 1] }
+              }
               className="relative w-full sm:w-[440px] h-[100dvh] bg-background shadow-2xl border-l border-border flex flex-col overflow-y-auto overscroll-contain"
               role="dialog"
               aria-modal="true"
@@ -246,7 +254,7 @@ export function CoreCompetencies({ copy }: CoreCompetenciesProps) {
                 </div>
               </div>
             </motion.div>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </section>

@@ -165,6 +165,9 @@ export const TRANSLATIONS: Record<LangCode, Translation> = {
         'Terbuka untuk diskusi proyek optimasi sistem, manajemen rantai pasok, atau peluang karir di bidang teknik industri.',
       successMessage: 'Pesan Anda berhasil terkirim!',
       errorMessage: 'Gagal mengirim pesan. Silakan coba lagi.',
+      copyEmail: 'Salin alamat email',
+      copiedEmail: 'Email disalin',
+      copyEmailFailed: 'Email tidak dapat disalin',
     },
     detail: {
       back: 'KEMBALI KE PROYEK',
@@ -346,6 +349,9 @@ export const TRANSLATIONS: Record<LangCode, Translation> = {
         'Open for discussions on systems optimization, supply chain engineering, or operational engineering opportunities.',
       successMessage: 'Your message has been successfully sent!',
       errorMessage: 'Failed to send message. Please try again.',
+      copyEmail: 'Copy email address',
+      copiedEmail: 'Email copied',
+      copyEmailFailed: 'Could not copy email',
     },
     detail: {
       back: 'BACK TO PROJECTS',

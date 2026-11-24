@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import { useReducedMotion } from 'framer-motion';
 import { ProjectThumbIcon } from './ProjectThumbIcon';
 import type { LangCode } from '../../i18n/types';
 import type { ProjectImage, ProjectThumbType } from '../../types/project';
@@ -22,6 +23,7 @@ const ROTATE_INTERVAL_MS = 3500;
 export function ProjectCardThumbnail({ images, lang, thumbType }: ProjectCardThumbnailProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isDesktop, setIsDesktop] = useState(false);
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     const desktop = window.matchMedia('(min-width: 1024px)');
@@ -32,12 +34,12 @@ export function ProjectCardThumbnail({ images, lang, thumbType }: ProjectCardThu
   }, []);
 
   useEffect(() => {
-    if (!isDesktop || images.length <= 1) return;
+    if (!isDesktop || reduceMotion || images.length <= 1) return;
     const timer = setInterval(() => {
       setActiveIndex((i) => (i + 1) % images.length);
     }, ROTATE_INTERVAL_MS);
     return () => clearInterval(timer);
-  }, [images.length, isDesktop]);
+  }, [images.length, isDesktop, reduceMotion]);
 
   if (images.length === 0) {
     return (
@@ -45,7 +47,7 @@ export function ProjectCardThumbnail({ images, lang, thumbType }: ProjectCardThu
         <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-stone-500 to-transparent"></div>
         <ProjectThumbIcon
           type={thumbType}
-          className="w-14 h-14 text-stone-300 dark:text-[#8A9099] group-hover:scale-125 group-hover:text-emerald-500 dark:group-hover:text-[#78DA76] transition-all duration-500 relative z-10"
+          className="w-14 h-14 text-stone-300 dark:text-[#8A9099] group-hover:scale-125 group-hover:text-emerald-500 dark:group-hover:text-[#78DA76] transition-transform duration-premium ease-premium relative z-10 motion-reduce:transform-none"
         />
       </>
     );
@@ -57,7 +59,7 @@ export function ProjectCardThumbnail({ images, lang, thumbType }: ProjectCardThu
         <div
           key={idx}
           aria-hidden={idx !== (isDesktop ? activeIndex : 0)}
-          className={`absolute inset-0 transition-opacity duration-700 ${
+          className={`absolute inset-0 transition-opacity duration-premium ease-premium ${
             idx === (isDesktop ? activeIndex : 0) ? 'opacity-100' : 'opacity-0'
           }`}
         >

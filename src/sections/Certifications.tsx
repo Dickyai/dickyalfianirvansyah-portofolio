@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { RevealSection } from '../components/common/RevealSection';
+import { Reveal } from '../components/common/Reveal';
 import { Container } from '../components/common/Container';
 import { CertificateGrid } from './CertificateGrid';
 import type {
@@ -68,7 +68,7 @@ export function Certifications({ heading, isDarkMode, lang }: CertificationsProp
   }, []);
 
   return (
-    <RevealSection className="relative w-full py-16 sm:py-20 lg:py-24">
+    <Reveal className="relative w-full py-16 sm:py-20 lg:py-24">
       <Container className="desktop-container max-w-[78rem]">
         <div id="certifications">
           <div className="hidden lg:block">
@@ -86,6 +86,6 @@ export function Certifications({ heading, isDarkMode, lang }: CertificationsProp
           <CertificateGrid lang={lang} />
         </div>
       </Container>
-    </RevealSection>
+    </Reveal>
   );
 }

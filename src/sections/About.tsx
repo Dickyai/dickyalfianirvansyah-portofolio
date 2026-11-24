@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import type { PointerEvent } from 'react';
-import { RevealSection } from '../components/common/RevealSection';
+import { Reveal } from '../components/common/Reveal';
 import { Container } from '../components/common/Container';
 import { STUDY_STATUS } from '../data/profile';
 import type { LangCode, Translation } from '../i18n/types';
@@ -40,7 +40,7 @@ export function About({ copy, lang }: AboutProps) {
         aria-hidden="true"
       />
 
-      <RevealSection className="relative z-10 w-full">
+      <Reveal className="relative z-10 w-full">
         <Container className="desktop-container max-w-[78rem]">
         <div className="border-y border-border/80 py-10 sm:py-12">
           <div className="grid gap-8 lg:grid-cols-[minmax(0,0.72fr)_minmax(0,1.28fr)] lg:gap-16">
@@ -67,7 +67,7 @@ export function About({ copy, lang }: AboutProps) {
           </div>
         </div>
         </Container>
-      </RevealSection>
+      </Reveal>
     </section>
   );
 }

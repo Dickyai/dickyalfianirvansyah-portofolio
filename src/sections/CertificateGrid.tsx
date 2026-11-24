@@ -4,9 +4,11 @@ import Image from 'next/image';
 import { createPortal } from 'react-dom';
 import { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { CERTIFICATIONS } from '../data/certifications';
 import type { LangCode } from '../i18n/types';
 import { trapTabFocus } from '../components/common/trapTabFocus';
+import { Reveal } from '../components/common/Reveal';
 
 interface CertificateGridProps {
   lang: LangCode;
@@ -14,10 +16,14 @@ interface CertificateGridProps {
 
 export function CertificateGrid({ lang }: CertificateGridProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const reduceMotion = useReducedMotion();
   const selected = selectedIndex === null ? null : CERTIFICATIONS[selectedIndex];
+
+  useEffect(() => setIsMounted(true), []);
 
   useEffect(() => {
     if (selectedIndex === null) return;
@@ -47,7 +53,8 @@ export function CertificateGrid({ lang }: CertificateGridProps) {
     <>
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:hidden">
         {CERTIFICATIONS.map((cert, index) => (
-          <div key={cert.name} className="min-w-0">
+          <Reveal key={cert.name} staggerIndex={index}>
+          <div className="min-w-0">
             <button
               type="button"
               onClick={(event) => {
@@ -71,12 +78,19 @@ export function CertificateGrid({ lang }: CertificateGridProps) {
             <p className="mt-2 text-sm font-medium leading-snug">{cert.name}</p>
             <p className="mt-1 text-xs text-muted-foreground">{cert.issuer} · {cert.date}</p>
           </div>
+          </Reveal>
         ))}
       </div>
 
-      {selected && createPortal(
-        <div
+      {isMounted && createPortal(
+        <AnimatePresence initial={false}>
+        {selected && (
+        <motion.div
           ref={dialogRef}
+          initial={reduceMotion ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: reduceMotion ? 0 : 0.24 }}
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4"
           role="dialog"
           aria-modal="true"
@@ -95,8 +109,11 @@ export function CertificateGrid({ lang }: CertificateGridProps) {
           >
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
-          <div
+          <motion.div
             className="relative aspect-[2481/3508] w-[min(88vw,58dvh)]"
+            initial={reduceMotion ? false : { opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: reduceMotion ? 0 : 0.24 }}
             onClick={(event) => event.stopPropagation()}
           >
             <Image
@@ -110,8 +127,10 @@ export function CertificateGrid({ lang }: CertificateGridProps) {
               quality={90}
               className="object-contain"
             />
-          </div>
-        </div>,
+          </motion.div>
+        </motion.div>
+        )}
+        </AnimatePresence>,
         document.body,
       )}
     </>

@@ -120,7 +120,7 @@ export default function PortfolioApp() {
         />
 
         <main id="main-content" tabIndex={-1} className="min-h-[100dvh]">
-          <div className="animate-in fade-in duration-700">
+          <div>
             <ParallaxComponent isDarkMode={isDarkMode} />
             <Hero copy={t.hero} lang={lang} />
 

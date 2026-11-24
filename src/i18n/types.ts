@@ -108,6 +108,9 @@ export interface Translation {
     description: string;
     successMessage: string;
     errorMessage: string;
+    copyEmail: string;
+    copiedEmail: string;
+    copyEmailFailed: string;
   };
   detail: {
     back: string;

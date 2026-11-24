@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { ArrowUpRight, Check, Mail, Send } from 'lucide-react';
+import { ArrowUpRight, Check, Copy, Mail, Send } from 'lucide-react';
 import type { ComponentType } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { RevealSection } from '../components/common/RevealSection';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { Reveal } from '../components/common/Reveal';
 import { Container } from '../components/common/Container';
 import { SOCIAL_ICON_MAP } from '../components/icons/SocialIcons';
 import { CONTACT_LINKS } from '../data/contact';
@@ -27,6 +27,17 @@ interface ContactProps {
 export function Contact({ sectionCopy, formCopy }: ContactProps) {
   const [formStatus, setFormStatus] = useState<FormStatus>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [emailCopyStatus, setEmailCopyStatus] = useState<'idle' | 'copied' | 'error'>('idle');
+  const reduceMotion = useReducedMotion();
+
+  const handleCopyEmail = async (email: string) => {
+    try {
+      await navigator.clipboard.writeText(email);
+      setEmailCopyStatus('copied');
+    } catch {
+      setEmailCopyStatus('error');
+    }
+  };
 
   const handleContactSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -87,7 +98,7 @@ export function Contact({ sectionCopy, formCopy }: ContactProps) {
       id="contact"
       className="relative py-16 sm:py-20 lg:py-24"
     >
-      <RevealSection className="relative z-10 w-full">
+      <Reveal className="relative z-10 w-full">
         <Container className="desktop-container max-w-[78rem]">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           {/* Left Column: Direct Channel Information & Socials */}
@@ -106,27 +117,45 @@ export function Contact({ sectionCopy, formCopy }: ContactProps) {
               {CONTACT_LINKS.map((link, idx) => {
                 const Icon = CONTACT_ICON_MAP[link.icon];
                 return (
-                  <a
-                    key={idx}
-                    href={link.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label={`${link.label}: ${link.value}`}
-                    className="group flex min-h-[68px] items-center justify-between gap-4 py-3 transition-colors"
-                  >
-                    <span className="flex min-w-0 items-center gap-3.5">
-                      <Icon className="h-4 w-4 shrink-0 text-blue-600 transition-colors group-hover:text-blue-800 dark:text-blue-400 dark:group-hover:text-blue-300" aria-hidden="true" />
-                      <span className="min-w-0">
-                        <span className="block font-mono text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-500">
-                          {link.label}
-                        </span>
-                        <span className="block truncate font-mono text-xs font-semibold text-slate-800 transition-colors group-hover:text-blue-700 dark:text-slate-200 dark:group-hover:text-blue-300">
-                          {link.value}
+                  <div key={idx} className="flex min-h-[68px] items-center justify-between gap-3 py-3">
+                    <a
+                      href={link.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={`${link.label}: ${link.value}`}
+                      className="group flex min-w-0 flex-1 items-center justify-between gap-4"
+                    >
+                      <span className="flex min-w-0 items-center gap-3.5">
+                        <Icon className="h-4 w-4 shrink-0 text-blue-600 transition-colors group-hover:text-blue-800 dark:text-blue-400 dark:group-hover:text-blue-300" aria-hidden="true" />
+                        <span className="min-w-0">
+                          <span className="block font-mono text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                            {link.label}
+                          </span>
+                          <span className="block truncate font-mono text-xs font-semibold text-slate-800 transition-colors group-hover:text-blue-700 dark:text-slate-200 dark:group-hover:text-blue-300">
+                            {link.value}
+                          </span>
                         </span>
                       </span>
-                    </span>
-                    <ArrowUpRight className="h-4 w-4 shrink-0 text-slate-400 transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400" aria-hidden="true" />
-                  </a>
+                      <ArrowUpRight className="h-4 w-4 shrink-0 text-slate-400 transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400" aria-hidden="true" />
+                    </a>
+                    {link.icon === 'mail' && (
+                      <div className="flex shrink-0 items-center gap-2">
+                        {emailCopyStatus !== 'idle' && (
+                          <span role="status" aria-live="polite" className="font-mono text-[10px] text-muted-foreground">
+                            {emailCopyStatus === 'copied' ? sectionCopy.copiedEmail : sectionCopy.copyEmailFailed}
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => void handleCopyEmail(link.value)}
+                          aria-label={emailCopyStatus === 'copied' ? sectionCopy.copiedEmail : sectionCopy.copyEmail}
+                          className="flex min-h-11 min-w-11 items-center justify-center rounded-full text-muted-foreground transition-transform duration-premium ease-premium hover:text-accent active:scale-[0.98] motion-reduce:transform-none"
+                        >
+                          <Copy className="h-4 w-4" aria-hidden="true" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -201,7 +230,7 @@ export function Contact({ sectionCopy, formCopy }: ContactProps) {
                   <button
                     disabled={formStatus === 'submitting' || formStatus === 'success'}
                     type="submit"
-                    className="w-full py-4 min-h-[48px] mt-2 bg-blue-600 hover:bg-blue-700 text-white font-mono text-xs font-bold transition-all disabled:opacity-60 flex items-center justify-center gap-2 rounded-xl uppercase tracking-wider shadow-md hover:shadow-blue-600/25 active:scale-[0.99]"
+                    className="w-full py-4 min-h-[48px] mt-2 bg-blue-600 hover:bg-blue-700 text-white font-mono text-xs font-bold transition-transform duration-premium ease-premium disabled:opacity-60 flex items-center justify-center gap-2 rounded-xl uppercase tracking-wider shadow-md hover:shadow-blue-600/25 active:scale-[0.98] motion-reduce:transform-none"
                   >
                     {formStatus === 'idle' && (
                       <>
@@ -234,9 +263,10 @@ export function Contact({ sectionCopy, formCopy }: ContactProps) {
                       <motion.p
                         role="status"
                         aria-live="polite"
-                        initial={{ opacity: 0, y: -5 }}
+                        initial={reduceMotion ? false : { opacity: 0, y: -5 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0 }}
+                        transition={{ duration: reduceMotion ? 0 : 0.24 }}
                         className="text-xs font-mono text-red-500 text-center pt-2"
                       >
                         {errorMessage}
@@ -246,9 +276,10 @@ export function Contact({ sectionCopy, formCopy }: ContactProps) {
                       <motion.p
                         role="status"
                         aria-live="polite"
-                        initial={{ opacity: 0, y: -5 }}
+                        initial={reduceMotion ? false : { opacity: 0, y: -5 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0 }}
+                        transition={{ duration: reduceMotion ? 0 : 0.24 }}
                         className="text-xs font-mono text-blue-600 dark:text-blue-400 text-center pt-2 font-medium"
                       >
                         {sectionCopy.successMessage}
@@ -260,7 +291,7 @@ export function Contact({ sectionCopy, formCopy }: ContactProps) {
           </div>
         </div>
         </Container>
-      </RevealSection>
+      </Reveal>
     </section>
   );
 }
