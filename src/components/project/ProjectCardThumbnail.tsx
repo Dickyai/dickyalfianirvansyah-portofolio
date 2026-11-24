@@ -3,10 +3,12 @@
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { ProjectThumbIcon } from './ProjectThumbIcon';
-import type { ProjectMedia, ProjectThumbType } from '../../types/project';
+import type { LangCode } from '../../i18n/types';
+import type { ProjectImage, ProjectThumbType } from '../../types/project';
 
 interface ProjectCardThumbnailProps {
-  media?: ProjectMedia[];
+  images: ProjectImage[];
+  lang: LangCode;
   thumbType: ProjectThumbType;
 }
 
@@ -15,18 +17,9 @@ const ROTATE_INTERVAL_MS = 3500;
 /**
  * Thumbnail untuk card di grid Projects.tsx.
  *
- * Hanya item bertipe 'image' yang dipakai & diputar bergantian di sini —
- * video SENGAJA disaring keluar (tidak ikut siklus, tidak ditampilkan sama
- * sekali di card grid). Video tetap tampil normal di halaman detail proyek
- * (ProjectMediaGallery), cuma tidak relevan untuk thumbnail kecil ini.
- *
- *   - 0 gambar  -> fallback ke ProjectThumbIcon (termasuk kalau project
- *                  cuma punya video, tanpa gambar sama sekali)
- *   - 1 gambar  -> statis
- *   - 2+ gambar -> bergantian otomatis tiap 3.5 detik, fade halus
+ * Project screenshots rotate on desktop; mobile loads only the first image.
  */
-export function ProjectCardThumbnail({ media, thumbType }: ProjectCardThumbnailProps) {
-  const images = (media ?? []).filter((item) => item.type === 'image');
+export function ProjectCardThumbnail({ images, lang, thumbType }: ProjectCardThumbnailProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isDesktop, setIsDesktop] = useState(false);
 
@@ -63,13 +56,14 @@ export function ProjectCardThumbnail({ media, thumbType }: ProjectCardThumbnailP
       {(isDesktop ? images : images.slice(0, 1)).map((item, idx) => (
         <div
           key={idx}
+          aria-hidden={idx !== (isDesktop ? activeIndex : 0)}
           className={`absolute inset-0 transition-opacity duration-700 ${
             idx === (isDesktop ? activeIndex : 0) ? 'opacity-100' : 'opacity-0'
           }`}
         >
           <Image
             src={item.src}
-            alt={item.alt ?? ''}
+            alt={idx === (isDesktop ? activeIndex : 0) ? item.alt[lang] : ''}
             fill
             loading="lazy"
             sizes="(max-width: 639px) calc(100vw - 2.5rem), (max-width: 1023px) calc((100vw - 4.5rem) / 2), 33vw"

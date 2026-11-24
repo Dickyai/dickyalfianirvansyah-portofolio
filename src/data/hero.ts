@@ -1,4 +1,5 @@
 import type { HeroData } from '../types/hero';
+import { STUDY_STATUS } from './profile';
 
 export const HERO_DATA: HeroData = {
   name: 'Dicky Alfian Irvansyah',
@@ -27,16 +28,14 @@ export const HERO_DATA: HeroData = {
   },
   rollingRoles: {
     id: [
-      'Peminat Rantai Pasok',
-      'Teknik Kualitas',
-      'Perencanaan Produksi',
-      'Peminat Analitik Data'
+      'Optimasi Sistem',
+      'Riset Operasi',
+      'Analitik Data Operasional'
     ],
     en: [
-      'Supply Chain Enthusiast',
-      'Quality Engineering',
-      'Production Planning',
-      'Data Analytics Enthusiast'
+      'Systems Optimization',
+      'Operations Research',
+      'Operational Data Analytics'
     ]
   },
   tags: ['🏷️ Inovatif', '🏷️ Kreatif', '🏷️ Pemecah Masalah'],
@@ -51,8 +50,8 @@ export const HERO_DATA: HeroData = {
     },
     paragraphs: [
       {
-        id: 'Saya merupakan lulusan baru Teknik Industri, saat ini menjabat Kepala Asisten Laboratorium di ELITE Lab, memimpin 18 asisten di lima divisi praktikum.',
-        en: "I'm an Industrial Engineering fresh-graduate, currently Head of Assistant Laboratory at the ELITE Lab, leading 18 assistants across five practicum divisions."
+        id: `${STUDY_STATUS.id}, saat ini menjabat Kepala Asisten Laboratorium di ELITE Lab, memimpin 18 asisten di lima divisi praktikum.`,
+        en: `I'm a ${STUDY_STATUS.en}, currently Head of Assistant Laboratory at the ELITE Lab, leading 18 assistants across five practicum divisions.`
       },
       {
         id: 'Sebagian besar proyek saya berawal dari sesuatu yang masih dikerjakan manual. Saya merombak rubrik penilaian setelah sistem lama merugikan mahasiswa secara tidak adil akibat kesalahan kelompok, dan membangun dashboard Google Apps Script yang menggantikan spreadsheet dan WhatsApp untuk penilaian, absensi, dan keuangan lab. Saya juga mengubah script Python pribadi menjadi web app publik untuk mengoreksi ujian yang tidak praktis diperiksa manual.',

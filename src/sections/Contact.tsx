@@ -161,6 +161,7 @@ export function Contact({ sectionCopy, formCopy }: ContactProps) {
                       type="text"
                       name="name"
                       maxLength={200}
+                      autoComplete="name"
                       className="w-full bg-muted border border-border rounded-xl p-3.5 text-xs sm:text-sm font-body focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 text-slate-900 dark:text-white transition-all shadow-sm"
                       placeholder={formCopy.namePlaceholder}
                     />
@@ -175,6 +176,8 @@ export function Contact({ sectionCopy, formCopy }: ContactProps) {
                       required
                       type="email"
                       name="email"
+                      autoComplete="email"
+                      inputMode="email"
                       className="w-full bg-muted border border-border rounded-xl p-3.5 text-xs sm:text-sm font-body focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 text-slate-900 dark:text-white transition-all shadow-sm"
                       placeholder="email@domain.com"
                     />

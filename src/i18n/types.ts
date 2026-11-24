@@ -12,7 +12,7 @@ export interface CoreCompetencyItem {
   capabilities: string[];
   applicationAreas: string[];
   evidence: string[];
-  relatedProjects?: number[]; // Berisi ID dari data/projects.ts
+  relatedProjects?: string[];
 }
 
 export interface Translation {
@@ -30,9 +30,11 @@ export interface Translation {
     greeting: string;
     major: string;
     specializationTitle: string;
+    headline: string;
     tagline: string;
     ctaWorks: string;
     ctaCv: string;
+    metrics: AboutMetric[];
     rollingRoles: string[];
     tags: string[];
     quote: string;
@@ -40,13 +42,11 @@ export interface Translation {
   coreCompetencies: {
     tag: string;
     heading: string;
-    exploreCta: string;
     panelHeaders: {
       capabilities: string;
       applications: string;
       evidence: string;
       relatedProjects: string;
-      viewProjectCta: string;
     };
     items: CoreCompetencyItem[];
   };
@@ -74,15 +74,18 @@ export interface Translation {
     tag: string;
     searchPlaceholder: string;
     noResultsPrefix: string;
+    filters: {
+      all: string;
+      optimization: string;
+      automation: string;
+      analytics: string;
+      quality: string;
+    };
   };
   about: {
     heading: string;
-    p1: string;
-    p2: string;
-    p3: string;
-    quickFactsTag: string;
-    quickFacts: string[];
-    metrics: AboutMetric[];
+    studyStatusLabel: string;
+    points: string[];
   };
   contact: {
     nameLabel: string;
@@ -108,10 +111,13 @@ export interface Translation {
   };
   detail: {
     back: string;
-    goalsHeading: string;
-    stage: string;
-    techUsed: string;
-    toolJustification: string;
+    problem: string;
+    approach: string;
+    results: string;
+    stack: string;
+    links: string;
+    github: string;
+    live: string;
     statusLabels: {
       active: string;
       inDevelopment: string;

@@ -1,193 +1,124 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, Play, X } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import Image from 'next/image';
 import { ProjectThumbIcon } from './ProjectThumbIcon';
-import type { ProjectMedia, ProjectThumbType } from '../../types/project';
+import type { LangCode } from '../../i18n/types';
+import type { ProjectImage, ProjectThumbType } from '../../types/project';
 
 interface ProjectMediaGalleryProps {
-  media?: ProjectMedia[];
+  images: ProjectImage[];
+  lang: LangCode;
   thumbType: ProjectThumbType;
 }
 
-/**
- * Preview utama + strip thumbnail di bawahnya (kalau media > 1), plus
- * lightbox: klik gambar aktif untuk membuka versi zoom layar penuh
- * (navigasi panah kiri/kanan & tombol X, juga bisa Esc/Arrow keyboard).
- *
- * CATATAN: status badge ("STATUS: ...") TIDAK lagi dirender di sini.
- * Dulu ditumpuk di atas gambar/video (pojok kiri bawah), sekarang dipindah
- * ke ProjectDetail.tsx supaya tidak menutupi media apa pun. Komponen ini
- * jadi murni soal menampilkan media, tidak lagi soal status proyek.
- */
-export function ProjectMediaGallery({ media, thumbType }: ProjectMediaGalleryProps) {
-  const items = media ?? [];
+export function ProjectMediaGallery({ images, lang, thumbType }: ProjectMediaGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
+  const activeImage = images[activeIndex];
 
-  const hasMedia = items.length > 0;
-  const active = hasMedia ? items[Math.min(activeIndex, items.length - 1)] : null;
+  const moveActiveImage = useCallback((offset: number) => {
+    setActiveIndex((index) => (index + offset + images.length) % images.length);
+  }, [images.length]);
 
-  // Indeks item bertipe gambar saja, dipakai untuk navigasi di dalam lightbox
-  // (lightbox cuma pernah dibuka untuk gambar, jadi navigasinya juga cuma
-  // meloncat antar sesama gambar, melewati video).
-  const imageIndices = items.reduce<number[]>((acc, item, idx) => {
-    if (item.type === 'image') acc.push(idx);
-    return acc;
-  }, []);
-
-  const goToImageOffset = (offset: number) => {
-    if (imageIndices.length === 0) return;
-    const currentPos = imageIndices.indexOf(activeIndex);
-    const nextPos = (currentPos + offset + imageIndices.length) % imageIndices.length;
-    setActiveIndex(imageIndices[nextPos]);
-  };
-
-  const scrollToMedia = (index: number) => {
-    const slide = carouselRef.current?.children.item(index);
-    if (!slide) return;
-    carouselRef.current?.scrollTo({
-      left: slide.getBoundingClientRect().width * index,
-      behavior: 'smooth',
-    });
+  const scrollToImage = (index: number) => {
+    const track = carouselRef.current;
+    const slide = track?.children.item(index);
+    if (!track || !slide) return;
+    track.scrollTo({ left: slide.getBoundingClientRect().width * index, behavior: 'smooth' });
   };
 
   const handleCarouselScroll = () => {
     const track = carouselRef.current;
-    if (!track) return;
-    const slideWidth = track.clientWidth;
-    if (slideWidth > 0) setActiveIndex(Math.round(track.scrollLeft / slideWidth));
+    if (track?.clientWidth) setActiveIndex(Math.round(track.scrollLeft / track.clientWidth));
   };
 
-  // Kunci scroll body selama lightbox terbuka
-  useEffect(() => {
-    document.body.style.overflow = isLightboxOpen ? 'hidden' : '';
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isLightboxOpen]);
-
-  // Kontrol keyboard: Esc menutup, panah kiri/kanan navigasi
   useEffect(() => {
     if (!isLightboxOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsLightboxOpen(false);
-      if (e.key === 'ArrowLeft') goToImageOffset(-1);
-      if (e.key === 'ArrowRight') goToImageOffset(1);
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsLightboxOpen(false);
+      if (event.key === 'ArrowLeft') moveActiveImage(-1);
+      if (event.key === 'ArrowRight') moveActiveImage(1);
     };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLightboxOpen, activeIndex]);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isLightboxOpen, moveActiveImage]);
 
   return (
-    <div className="mb-10">
-      <div className="hidden lg:block">
-      <div
-        role={active?.type === 'image' ? 'button' : undefined}
-        tabIndex={active?.type === 'image' ? 0 : undefined}
-        onKeyDown={(e) => {
-          if (active?.type === 'image' && (e.key === 'Enter' || e.key === ' ')) {
-            e.preventDefault();
-            setIsLightboxOpen(true);
-          }
-        }}
-        onClick={() => {
-          if (active?.type === 'image') setIsLightboxOpen(true);
-        }}
-        aria-label={active?.type === 'image' ? 'Perbesar gambar preview' : undefined}
-        className={`aspect-video w-full bg-stone-100 dark:bg-[#1B1E22] rounded-xl border border-stone-200 dark:border-[#2E323A] flex items-center justify-center relative overflow-hidden group focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${
-          active?.type === 'image' ? 'cursor-zoom-in' : ''
-        }`}
-      >
-        {!hasMedia && (
-          <>
-            <div className="absolute inset-0 blueprint-grid opacity-60"></div>
-            <div className="absolute inset-0 bg-gradient-to-t from-stone-100/90 dark:from-[#1B1E22]/90 to-transparent z-0"></div>
-            <ProjectThumbIcon
-              type={thumbType}
-              className="w-24 h-24 text-stone-300 dark:text-[#2E323A] group-hover:scale-110 transition-transform duration-700 relative z-10"
-            />
-          </>
-        )}
-
-        {active?.type === 'image' && (
-          <Image
-            src={active.src}
-            alt={active.alt ?? ''}
-            fill
-            loading="lazy"
-            sizes="(max-width: 1279px) calc(100vw - 6rem), 944px"
-            className="object-cover"
-          />
-        )}
-
-        {active?.type === 'video' && (
-          <video
-            key={active.src}
-            src={active.src}
-            controls
-            className="absolute inset-0 w-full h-full object-cover bg-black"
-          />
-        )}
-      </div>
-
-      {hasMedia && items.length > 1 && (
-        <div className="flex gap-3 mt-3 overflow-x-auto pb-1">
-          {items.map((item, idx) => (
+    <div className="mb-10 w-full min-w-0">
+      {images.length > 0 ? (
+        <>
+          <div className="hidden lg:block">
             <button
-              key={idx}
               type="button"
-              onClick={() => setActiveIndex(idx)}
-              aria-label={`Pilih media ${idx + 1}`}
-              aria-pressed={idx === activeIndex}
-              className={`relative shrink-0 w-24 aspect-video rounded-lg overflow-hidden border-2 transition-colors min-h-[44px] ${
-                idx === activeIndex
-                  ? 'border-emerald-500 dark:border-[#78DA76]'
-                  : 'border-transparent hover:border-stone-300 dark:hover:border-[#2E323A]'
-              }`}
+              onClick={() => setIsLightboxOpen(true)}
+              aria-label={lang === 'id' ? 'Perbesar gambar proyek' : 'Enlarge project image'}
+              className="group relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-xl border border-stone-200 bg-stone-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 dark:border-[#2E323A] dark:bg-[#1B1E22]"
             >
-              {item.type === 'video' ? (
-                <div className="w-full h-full bg-stone-900 flex items-center justify-center">
-                  <Play className="w-4 h-4 text-white" aria-hidden="true" />
-                </div>
-              ) : (
-                <Image
-                  src={item.src}
-                  alt={item.alt ?? ''}
-                  fill
-                  loading="lazy"
-                  sizes="96px"
-                  className="object-cover"
-                />
-              )}
+              <Image
+                src={activeImage.src}
+                alt={activeImage.alt[lang]}
+                fill
+                loading="lazy"
+                sizes="(max-width: 1279px) calc(100vw - 6rem), 944px"
+                className="object-cover"
+              />
             </button>
-          ))}
-        </div>
-      )}
-      </div>
+            {images.length > 1 && (
+              <div className="mt-3 flex gap-3 overflow-x-auto pb-1">
+                {images.map((image, index) => (
+                  <button
+                    key={image.src}
+                    type="button"
+                    onClick={() => setActiveIndex(index)}
+                    aria-label={`${lang === 'id' ? 'Pilih gambar' : 'Select image'} ${index + 1}`}
+                    aria-pressed={index === activeIndex}
+                    className={`relative aspect-video min-h-[44px] w-24 shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${
+                      index === activeIndex
+                        ? 'border-emerald-500 dark:border-[#78DA76]'
+                        : 'border-transparent hover:border-stone-300 dark:hover:border-[#2E323A]'
+                    }`}
+                  >
+                    <Image
+                      src={image.src}
+                      alt={image.alt[lang]}
+                      fill
+                      loading="lazy"
+                      sizes="96px"
+                      className="object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
-      {hasMedia && (
-        <div className="lg:hidden">
-          <div
-            ref={carouselRef}
-            onScroll={handleCarouselScroll}
-            role="region"
-            aria-roledescription="carousel"
-            aria-label="Project screenshots"
-            className="flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain scroll-smooth rounded-xl motion-reduce:scroll-auto"
-          >
-            {items.map((item, index) => (
-              <div
-                key={`${item.src}-${index}`}
-                className="relative aspect-video w-full shrink-0 snap-center overflow-hidden rounded-xl border border-stone-200 bg-stone-100 dark:border-[#2E323A] dark:bg-[#1B1E22]"
-              >
-                {item.type === 'image' ? (
+          <div className="lg:hidden">
+            <div
+              ref={carouselRef}
+              onScroll={handleCarouselScroll}
+              role="region"
+              aria-roledescription="carousel"
+              aria-label={lang === 'id' ? 'Tangkapan layar proyek' : 'Project screenshots'}
+              className="flex w-full min-w-0 snap-x snap-mandatory overflow-x-auto overscroll-x-contain scroll-smooth rounded-xl motion-reduce:scroll-auto"
+            >
+              {images.map((image, index) => (
+                <div
+                  key={image.src}
+                  className="relative aspect-video w-full shrink-0 snap-center overflow-hidden rounded-xl border border-stone-200 bg-stone-100 dark:border-[#2E323A] dark:bg-[#1B1E22]"
+                >
                   <button
                     type="button"
-                    aria-label={`Enlarge screenshot ${index + 1}`}
+                    aria-label={`${lang === 'id' ? 'Perbesar tangkapan layar' : 'Enlarge screenshot'} ${index + 1}`}
                     onClick={() => {
                       setActiveIndex(index);
                       setIsLightboxOpen(true);
@@ -195,99 +126,101 @@ export function ProjectMediaGallery({ media, thumbType }: ProjectMediaGalleryPro
                     className="absolute inset-0 cursor-zoom-in focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
                   >
                     <Image
-                      src={item.src}
-                      alt={item.alt ?? ''}
+                      src={image.src}
+                      alt={image.alt[lang]}
                       fill
                       loading="lazy"
                       sizes="(max-width: 1023px) calc(100vw - 2.5rem), 944px"
                       className="object-cover"
                     />
                   </button>
-                ) : (
-                  <video
-                    src={item.src}
-                    controls
-                    preload="none"
-                    className="absolute inset-0 h-full w-full bg-black object-cover"
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-
-          {items.length > 1 && (
-            <div className="mt-3 flex items-center justify-center gap-2">
-              <span className="mr-1 font-mono text-xs text-muted-foreground" aria-live="polite">
-                {activeIndex + 1} / {items.length}
-              </span>
-              {items.map((item, index) => (
-                <button
-                  key={`${item.src}-indicator-${index}`}
-                  type="button"
-                  aria-label={`Go to screenshot ${index + 1}`}
-                  aria-current={index === activeIndex}
-                  onClick={() => scrollToMedia(index)}
-                  className={`h-2 w-2 rounded-full transition-colors ${
-                    index === activeIndex ? 'bg-accent' : 'bg-muted-foreground/35'
-                  }`}
-                />
+                </div>
               ))}
             </div>
-          )}
+            {images.length > 1 && (
+              <div className="mt-3 flex items-center justify-center gap-2">
+                <span className="mr-1 font-mono text-xs text-muted-foreground" aria-live="polite">
+                  {activeIndex + 1} / {images.length}
+                </span>
+                {images.map((image, index) => (
+                  <button
+                    key={`${image.src}-indicator`}
+                    type="button"
+                    aria-label={`${lang === 'id' ? 'Ke gambar' : 'Go to image'} ${index + 1}`}
+                    aria-current={index === activeIndex}
+                    onClick={() => scrollToImage(index)}
+                    className="flex h-11 w-11 items-center justify-center"
+                  >
+                    <span
+                      className={`h-2 w-2 rounded-full transition-colors ${
+                        index === activeIndex ? 'bg-accent' : 'bg-muted-foreground/35'
+                      }`}
+                      aria-hidden="true"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <p className="mt-3 text-center font-mono text-xs leading-relaxed text-muted-foreground">
+            {activeImage.caption[lang]}
+          </p>
+        </>
+      ) : (
+        <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-xl border border-stone-200 bg-stone-100 dark:border-[#2E323A] dark:bg-[#1B1E22]">
+          <ProjectThumbIcon type={thumbType} className="h-24 w-24 text-stone-300 dark:text-[#2E323A]" />
         </div>
       )}
 
-      {isLightboxOpen && active?.type === 'image' && (
+      {isLightboxOpen && activeImage && (
         <div
           onClick={() => setIsLightboxOpen(false)}
-          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-6"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-6"
           role="dialog"
           aria-modal="true"
-          aria-label="Media preview"
+          aria-label={lang === 'id' ? 'Pratinjau gambar' : 'Image preview'}
         >
           <button
             type="button"
             onClick={() => setIsLightboxOpen(false)}
-            className="absolute top-6 right-6 text-white/80 hover:text-white transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-white/10"
-            aria-label="Tutup preview"
+            className="absolute right-6 top-6 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+            aria-label={lang === 'id' ? 'Tutup pratinjau' : 'Close preview'}
           >
-            <X className="w-7 h-7" aria-hidden="true" />
+            <X className="h-7 w-7" aria-hidden="true" />
           </button>
 
-          {imageIndices.length > 1 && (
+          {images.length > 1 && (
             <>
               <button
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  goToImageOffset(-1);
+                onClick={(event) => {
+                  event.stopPropagation();
+                  moveActiveImage(-1);
                 }}
-                className="absolute left-4 md:left-8 text-white/80 hover:text-white transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-white/10"
-                aria-label="Gambar sebelumnya"
+                className="absolute left-4 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white md:left-8"
+                aria-label={lang === 'id' ? 'Gambar sebelumnya' : 'Previous image'}
               >
-                <ChevronLeft className="w-8 h-8" aria-hidden="true" />
+                <ChevronLeft className="h-8 w-8" aria-hidden="true" />
               </button>
               <button
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  goToImageOffset(1);
+                onClick={(event) => {
+                  event.stopPropagation();
+                  moveActiveImage(1);
                 }}
-                className="absolute right-4 md:right-8 text-white/80 hover:text-white transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-white/10"
-                aria-label="Gambar berikutnya"
+                className="absolute right-4 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white md:right-8"
+                aria-label={lang === 'id' ? 'Gambar berikutnya' : 'Next image'}
               >
-                <ChevronRight className="w-8 h-8" aria-hidden="true" />
+                <ChevronRight className="h-8 w-8" aria-hidden="true" />
               </button>
             </>
           )}
 
-          <div
-            className="relative h-[calc(100dvh-3rem)] w-full max-w-5xl"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="relative h-[calc(100dvh-3rem)] w-full max-w-5xl" onClick={(event) => event.stopPropagation()}>
             <Image
-              src={active.src}
-              alt={active.alt ?? ''}
+              src={activeImage.src}
+              alt={activeImage.alt[lang]}
               fill
               loading="lazy"
               sizes="100vw"

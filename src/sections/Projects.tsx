@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import { Search, ArrowUpRight, X } from 'lucide-react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RevealSection } from '../components/common/RevealSection';
 import { Container } from '../components/common/Container';
 import { ProjectCardThumbnail } from '../components/project/ProjectCardThumbnail';
 import { STATUS_BADGE_STYLES, getStatusLabel } from '../components/project/projectStatusStyles';
 import { PROJECTS } from '../data/projects';
-import type { Project } from '../types/project';
+import type { ProjectCategory } from '../types/project';
 import type { LangCode, Translation } from '../i18n/types';
 
 interface ProjectsProps {
@@ -16,28 +17,28 @@ interface ProjectsProps {
   searchCopy: Translation['projectsSection'];
   statusLabels: Translation['detail']['statusLabels'];
   lang: LangCode;
-  onSelectProject: (project: Project) => void;
 }
 
-type FilterType = 'all' | 'active' | 'completed' | 'in-development';
+type FilterType = 'all' | ProjectCategory;
 
-export function Projects({ heading, searchCopy, statusLabels, lang, onSelectProject }: ProjectsProps) {
+export function Projects({ heading, searchCopy, statusLabels, lang }: ProjectsProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
 
   const filterTabs: { id: FilterType; label: string }[] = [
-    { id: 'all', label: lang === 'id' ? 'Semua Proyek' : 'All Projects' },
-    { id: 'active', label: getStatusLabel('active', statusLabels) },
-    { id: 'completed', label: getStatusLabel('completed', statusLabels) },
-    { id: 'in-development', label: getStatusLabel('in-development', statusLabels) },
+    { id: 'all', label: searchCopy.filters.all },
+    { id: 'optimization', label: searchCopy.filters.optimization },
+    { id: 'automation', label: searchCopy.filters.automation },
+    { id: 'analytics', label: searchCopy.filters.analytics },
+    { id: 'quality', label: searchCopy.filters.quality },
   ];
 
   const filteredProjects = PROJECTS.filter((p) => {
-    const matchesFilter = activeFilter === 'all' || p.status === activeFilter;
+    const matchesFilter = activeFilter === 'all' || p.category === activeFilter;
     const matchesSearch =
       p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.tech.some((tech) => tech.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      p.desc[lang].toLowerCase().includes(searchQuery.toLowerCase());
+      p.stack.some((tech) => tech.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      p.summary[lang].toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
@@ -95,7 +96,7 @@ export function Projects({ heading, searchCopy, statusLabels, lang, onSelectProj
                 type="button"
                 onClick={() => setActiveFilter(tab.id)}
                 aria-pressed={isActive}
-                className={`relative px-4 py-2 min-h-[38px] rounded-full font-mono text-xs font-semibold tracking-wider transition-colors duration-200 flex items-center justify-center ${
+                className={`relative px-4 py-2 min-h-[44px] rounded-full font-mono text-xs font-semibold tracking-wider transition-colors duration-200 flex items-center justify-center ${
                   isActive
                     ? 'text-white'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -119,22 +120,21 @@ export function Projects({ heading, searchCopy, statusLabels, lang, onSelectProj
             {filteredProjects.length > 0 ? (
               filteredProjects.map((project) => (
                 <motion.div
-                  key={project.id}
+                  key={project.slug}
                   layout
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.25 }}
                 >
-                  <button
-                    type="button"
-                    onClick={() => onSelectProject(project)}
+                  <Link
+                    href={`/projects/${project.slug}`}
                     aria-label={`${lang === 'id' ? 'Lihat detail proyek' : 'View project details'}: ${project.title}`}
                     className="group block w-full text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
                   >
                     <div className="relative aspect-[1.42] overflow-hidden border-y border-border/70 bg-card/20">
                       <div className="absolute inset-0 transition-transform duration-500 ease-out group-hover:scale-[1.03]">
-                          <ProjectCardThumbnail media={project.media} thumbType={project.thumbType} />
+                          <ProjectCardThumbnail images={project.images} lang={lang} thumbType={project.thumbType} />
                       </div>
                       <span
                         className={`absolute left-3 top-3 z-10 font-mono text-[10px] font-bold ${STATUS_BADGE_STYLES[project.status]}`}
@@ -151,20 +151,20 @@ export function Projects({ heading, searchCopy, statusLabels, lang, onSelectProj
                         <ArrowUpRight className="mt-1 h-4 w-4 shrink-0 text-slate-400 transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400" aria-hidden="true" />
                       </div>
                       <p className="mt-1 font-mono text-[11px] text-slate-500 dark:text-slate-400">
-                        {project.period}
+                        {searchCopy.filters[project.category]} · {project.period}
                       </p>
                       <p className="mt-3 line-clamp-3 font-body text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                        {project.desc[lang]}
+                        {project.summary[lang]}
                       </p>
                       <div className="mt-4 flex flex-wrap gap-x-3 gap-y-1 border-t border-border/70 pt-3">
-                        {project.tech.map((tag, i) => (
+                        {project.stack.map((tag, i) => (
                           <span key={i} className="font-mono text-[11px] text-slate-500 dark:text-slate-400">
                             {tag}
                           </span>
                         ))}
                       </div>
                     </div>
-                  </button>
+                  </Link>
                 </motion.div>
               ))
             ) : (
@@ -173,7 +173,7 @@ export function Projects({ heading, searchCopy, statusLabels, lang, onSelectProj
                 animate={{ opacity: 1 }}
                 className="col-span-full border-y border-border/70 py-16 text-center font-mono text-sm text-slate-500 dark:text-slate-400"
               >
-                {searchCopy.noResultsPrefix} &quot;{searchQuery}&quot;
+                {searchCopy.noResultsPrefix} &quot;{searchQuery || filterTabs.find((tab) => tab.id === activeFilter)?.label}&quot;
               </motion.div>
             )}
           </AnimatePresence>

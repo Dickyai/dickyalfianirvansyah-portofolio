@@ -7,37 +7,39 @@ export interface LocalizedText {
   en: string;
 }
 
-export interface ProjectObjective {
-  phase: LocalizedText;
-  detail: LocalizedText;
-}
+export type ProjectCategory = 'optimization' | 'automation' | 'analytics' | 'quality';
 
-export interface ProjectTool {
-  name: string;
-  reason: LocalizedText;
+export interface ProjectMetric {
+  label: LocalizedText;
+  value: string;
+  detail?: LocalizedText;
 }
 
 export type ProjectThumbType = 'database' | 'code' | 'monitor' | 'terminal' | 'settings';
 
-export interface ProjectMedia {
-  type: 'image' | 'video';
+export interface ProjectImage {
   src: string;
-  alt?: string;
+  alt: LocalizedText;
+  caption: LocalizedText;
 }
 
 export type ProjectStatus = 'active' | 'in-development' | 'completed';
 
 export interface Project {
-  id: number;
+  slug: string;
   title: string;
-  thumbType: ProjectThumbType;
+  category: ProjectCategory;
   status: ProjectStatus;
-  desc: LocalizedText;
-  tech: string[];
   period: string;
-  repo: string;
-  demo: string;
-  objectives: ProjectObjective[];
-  tools: ProjectTool[];
-  media?: ProjectMedia[];
+  summary: LocalizedText;
+  problem: LocalizedText;
+  approach: LocalizedText;
+  metrics: ProjectMetric[];
+  stack: string[];
+  images: ProjectImage[];
+  links: {
+    live?: string;
+    github?: string;
+  };
+  thumbType: ProjectThumbType;
 }

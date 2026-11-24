@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Target, Boxes, BarChart3, Activity, Cpu, BookOpen, X, ArrowRight } from 'lucide-react';
+import { Target, Boxes, BarChart3, Activity, Cpu, BookOpen, X } from 'lucide-react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RevealSection } from '../components/common/RevealSection';
 import { Container } from '../components/common/Container';
@@ -40,23 +41,6 @@ export function CoreCompetencies({ copy }: CoreCompetenciesProps) {
     };
   }, [selectedComp, lenis]);
 
-  // Navigasi smooth ke section projects
-  const handleScrollToProjects = () => {
-    setSelectedComp(null);
-    setTimeout(() => {
-      const projects = document.getElementById('projects');
-      if (projects) {
-        if (lenis) lenis.scrollTo(projects, { offset: -80 });
-        else {
-          projects.scrollIntoView({
-            behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-            block: 'start',
-          });
-        }
-      }
-    }, 150);
-  };
-
   return (
     <section
       id="competencies"
@@ -74,42 +58,60 @@ export function CoreCompetencies({ copy }: CoreCompetenciesProps) {
           {copy.items.map((item, idx) => {
             const Icon = COMPETENCY_ICONS[idx % COMPETENCY_ICONS.length];
             return (
-              <motion.button
+              <motion.article
                 key={idx}
                 whileHover={{ x: 4 }}
                 transition={{ duration: 0.18 }}
-                onClick={() => setSelectedComp({ index: idx, data: item })}
-                className="group flex min-h-[150px] items-start gap-4 border-b border-border/80 py-6 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
-                aria-label={`View details for ${item.title}`}
+                className="group min-h-[150px] border-b border-border/80 py-6"
               >
-                <span className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center text-blue-600 transition-colors group-hover:text-blue-800 dark:text-blue-400 dark:group-hover:text-blue-300">
-                  <Icon className="h-5 w-5" aria-hidden="true" />
-                </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedComp({ index: idx, data: item })}
+                  className="flex w-full items-start gap-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
+                  aria-label={`View details for ${item.title}`}
+                >
+                  <span className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center text-blue-600 transition-colors group-hover:text-blue-800 dark:text-blue-400 dark:group-hover:text-blue-300">
+                    <Icon className="h-5 w-5" aria-hidden="true" />
+                  </span>
 
-                <span className="min-w-0 flex-1">
-                  <span className="mb-1 flex items-center justify-between gap-3">
-                    <span role="heading" aria-level={3} className="font-display text-[clamp(1rem,1.88vw,1.20375rem)] font-bold leading-snug text-slate-900 transition-colors group-hover:text-blue-700 dark:text-white dark:group-hover:text-blue-300">
-                      {item.title}
+                  <span className="min-w-0 flex-1">
+                    <span className="mb-1 flex items-center justify-between gap-3">
+                      <span role="heading" aria-level={3} className="font-display text-[clamp(1rem,1.88vw,1.20375rem)] font-bold leading-snug text-slate-900 transition-colors group-hover:text-blue-700 dark:text-white dark:group-hover:text-blue-300">
+                        {item.title}
+                      </span>
+                      <span className="shrink-0 font-mono text-[11px] text-slate-400 dark:text-slate-500">
+                        0{idx + 1}
+                      </span>
                     </span>
-                    <span className="shrink-0 font-mono text-[11px] text-slate-400 dark:text-slate-500">
-                      0{idx + 1}
+
+                    <span className="block font-mono text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      {item.category}
+                    </span>
+
+                    <span className="mt-2 block font-body text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                      {item.description}
                     </span>
                   </span>
+                </button>
 
-                  <span className="block font-mono text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    {item.category}
-                  </span>
-
-                  <span className="mt-2 block font-body text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                    {item.description}
-                  </span>
-
-                  <span className="mt-3 inline-flex items-center gap-1 font-mono text-[11px] font-semibold text-blue-600 transition-colors group-hover:text-blue-800 dark:text-blue-400 dark:group-hover:text-blue-300">
-                    {copy.exploreCta}
-                    <ArrowRight className="h-3 w-3" aria-hidden="true" />
-                  </span>
-                </span>
-              </motion.button>
+                {item.relatedProjects && item.relatedProjects.length > 0 && (
+                  <div className="ml-[3.25rem] mt-3 flex flex-wrap gap-x-4 gap-y-2">
+                    {item.relatedProjects.map((slug) => {
+                      const project = PROJECTS.find((entry) => entry.slug === slug);
+                      if (!project) return null;
+                      return (
+                        <Link
+                          key={project.slug}
+                          href={`/projects/${project.slug}`}
+                          className="inline-flex min-h-[44px] items-center gap-1 font-mono text-xs font-semibold text-blue-600 hover:text-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+                        >
+                          {project.title}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </motion.article>
             );
           })}
         </div>
@@ -211,23 +213,19 @@ export function CoreCompetencies({ copy }: CoreCompetenciesProps) {
                   {selectedComp.data.relatedProjects && selectedComp.data.relatedProjects.length > 0 && (
                     <DetailSection title={copy.panelHeaders.relatedProjects}>
                       <div className="space-y-3">
-                        {selectedComp.data.relatedProjects.map((projectId, i) => {
-                          const projectData = PROJECTS.find(p => p.id === projectId);
+                        {selectedComp.data.relatedProjects.map((slug) => {
+                          const projectData = PROJECTS.find((project) => project.slug === slug);
                           if (!projectData) return null;
                           return (
-                            <div key={i} className="px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 text-sm font-medium text-slate-800 dark:text-slate-200">
+                            <Link
+                              key={projectData.slug}
+                              href={`/projects/${projectData.slug}`}
+                              className="block rounded-lg border border-blue-100 bg-blue-50 px-3 py-3 text-sm font-medium text-slate-800 hover:border-blue-300 dark:border-blue-900/30 dark:bg-blue-900/10 dark:text-slate-200"
+                            >
                               {projectData.title}
-                            </div>
+                            </Link>
                           );
                         })}
-                        
-                        <button
-                          onClick={handleScrollToProjects}
-                          className="w-full mt-2 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-mono text-xs font-bold uppercase transition-transform hover:scale-[1.02] active:scale-95"
-                        >
-                          <span>{copy.panelHeaders.viewProjectCta}</span>
-                          <ArrowRight className="w-4 h-4" />
-                        </button>
                       </div>
                     </DetailSection>
                   )}

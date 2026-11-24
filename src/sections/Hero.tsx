@@ -28,10 +28,13 @@ export function Hero({ copy, lang }: HeroProps) {
             <p className="font-mono text-sm font-semibold text-blue-700 dark:text-blue-400">
               {copy.greeting}
             </p>
-            <h1 className="mt-2 font-display text-[clamp(2rem,6.27vw,4.0125rem)] font-extrabold leading-none tracking-tight text-slate-900 dark:text-white">
+            <h1 className="mt-2 text-balance font-display text-[clamp(2rem,6.27vw,4.0125rem)] font-extrabold leading-none tracking-tight text-slate-900 dark:text-white">
               Dicky Alfian Irvansyah
             </h1>
-            <p className="mt-3 inline-block max-w-full break-words rounded-lg border border-border bg-card/80 px-3 py-1.5 font-mono text-[12px] text-slate-600 dark:text-slate-300 sm:text-xs">
+            <p className="mt-4 max-w-xl text-balance font-display text-[clamp(1.05rem,2.1vw,1.35rem)] font-semibold leading-snug text-slate-800 dark:text-slate-100">
+              {copy.headline}
+            </p>
+            <p className="mt-3 inline-block max-w-full break-words rounded-lg border border-border bg-card/80 px-3 py-1.5 font-mono text-[10px] leading-relaxed text-slate-600 dark:text-slate-300 sm:text-xs">
               {copy.tagline}
             </p>
 
@@ -43,6 +46,22 @@ export function Hero({ copy, lang }: HeroProps) {
             <blockquote className="mt-4 max-w-xl rounded-lg border border-border bg-card/70 px-4 py-3 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
               {copy.quote}
             </blockquote>
+
+            <dl className="mt-5 grid max-w-xl grid-cols-3 gap-2 sm:gap-3">
+              {copy.metrics.map((metric) => (
+                <div
+                  key={metric.label}
+                  className="min-w-0 rounded-lg border border-border bg-card/80 p-2.5 sm:p-3"
+                >
+                  <dt className="mt-1 break-words font-mono text-[9px] leading-tight tracking-wide text-slate-500 dark:text-slate-400 sm:text-[10px]">
+                    {metric.label}
+                  </dt>
+                  <dd className="mt-1 font-display text-lg font-extrabold leading-tight text-blue-600 dark:text-blue-400 sm:text-xl">
+                    {metric.value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
 
             <div className="mt-6 flex flex-wrap gap-3">
               <a

@@ -4,13 +4,15 @@ import { useRef, useState } from 'react';
 import type { PointerEvent } from 'react';
 import { RevealSection } from '../components/common/RevealSection';
 import { Container } from '../components/common/Container';
-import type { Translation } from '../i18n/types';
+import { STUDY_STATUS } from '../data/profile';
+import type { LangCode, Translation } from '../i18n/types';
 
 interface AboutProps {
   copy: Translation['about'];
+  lang: LangCode;
 }
 
-export function About({ copy }: AboutProps) {
+export function About({ copy, lang }: AboutProps) {
   const spotlightRef = useRef<HTMLDivElement>(null);
   const [spotlightActive, setSpotlightActive] = useState(false);
 
@@ -46,29 +48,22 @@ export function About({ copy }: AboutProps) {
             <h2 className="font-display text-[clamp(1.605rem,3.77vw,2.4075rem)] font-extrabold leading-[1.111] tracking-tight text-slate-900 dark:text-white">
               {copy.heading}
             </h2>
-
-              <dl className="mt-8 grid grid-cols-3 border-y border-border/80 lg:mt-auto lg:grid-cols-1">
-                {copy.metrics.map((metric, index) => (
-                  <div
-                    key={`${metric.label}-${index}`}
-                    className="border-r border-border/80 py-4 pr-3 last:border-r-0 sm:pr-5 lg:border-b lg:border-r-0 lg:py-5 lg:last:border-b-0"
-                  >
-                    <dt className="font-mono text-[10px] uppercase leading-tight tracking-wider text-slate-500 dark:text-slate-400 sm:text-[11px]">
-                      {metric.label}
-                    </dt>
-                    <dd className="mt-1 font-display text-xl font-extrabold text-blue-600 dark:text-blue-400 sm:text-2xl">
-                    {metric.value}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
+            <p className="mt-5 font-mono text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400">
+              {copy.studyStatusLabel}
+              <span className="mt-1 block font-body text-sm font-semibold normal-case tracking-normal text-slate-700 dark:text-slate-200">
+                {STUDY_STATUS[lang]}
+              </span>
+            </p>
             </div>
 
-            <div className="space-y-5 font-body text-sm leading-relaxed text-slate-700 dark:text-slate-300 sm:text-base sm:leading-7">
-              <p className="text-left lg:text-justify">{copy.p1}</p>
-              <p className="text-left lg:text-justify">{copy.p2}</p>
-              <p className="text-left lg:text-justify">{copy.p3}</p>
-            </div>
+            <ul className="space-y-5 font-body text-sm leading-relaxed text-slate-700 dark:text-slate-300 sm:text-base sm:leading-7">
+              {copy.points.map((point) => (
+                <li key={point} className="flex items-start gap-3">
+                  <span className="mt-[0.65em] h-1.5 w-1.5 shrink-0 rounded-full bg-blue-600 dark:bg-blue-400" aria-hidden="true" />
+                  <span className="text-left lg:text-justify">{point}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
         </Container>
