@@ -730,7 +730,7 @@ export function PictureRailGallery({
       {(eyebrow || heading) && (
         <header className="relative z-10 flex flex-col items-center gap-2 px-6 pt-7 text-center">
           {eyebrow && <p className="text-[12px] font-medium uppercase tracking-[0.28em] text-muted-foreground">{eyebrow}</p>}
-          {heading && <h2 className="text-balance text-2xl font-medium tracking-tight sm:text-3xl">{heading}</h2>}
+          {heading && <h2 className="text-balance text-[clamp(1.605rem,3.14vw,2.00625rem)] font-medium leading-[1.2] tracking-tight">{heading}</h2>}
         </header>
       )}
 
@@ -1200,7 +1200,7 @@ function Detail({ uid, item, shape, index, total, labels, reduced, source, onLif
         </div>
         <div className={`flex flex-col gap-3 text-center transition-[opacity,transform] delay-150 duration-500 motion-reduce:transition-none md:text-left ${shown ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"}`}>
           <p className="font-mono text-[12px] tracking-[0.2em] text-muted-foreground">{String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}</p>
-          <h3 id={titleId} className="text-2xl font-medium tracking-tight sm:text-3xl">{item.title}</h3>
+          <h3 id={titleId} className="text-[clamp(1.605rem,3.14vw,2.00625rem)] font-medium leading-[1.2] tracking-tight">{item.title}</h3>
           {byline && <p className="text-sm text-muted-foreground">{byline}</p>}
           {item.tag && <p className="text-lg font-medium tabular-nums">{item.tag}</p>}
           {item.details && item.details.length > 0 && (

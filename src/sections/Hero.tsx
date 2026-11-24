@@ -5,6 +5,7 @@ import { ArrowDownRight, Download } from 'lucide-react';
 import Image from 'next/image';
 import { useRoleTypewriter } from '../hooks/useRoleTypewriter';
 import { RevealSection } from '../components/common/RevealSection';
+import { Container } from '../components/common/Container';
 import { CV_DOWNLOAD_URL } from '../data/contact';
 import type { LangCode, Translation } from '../i18n/types';
 
@@ -19,14 +20,15 @@ export function Hero({ copy, lang }: HeroProps) {
   const role = reduceMotion ? copy.rollingRoles[0] : displayedText || copy.rollingRoles[0];
 
   return (
-    <section id="hero" className="relative flex min-h-[100svh] items-center overflow-hidden px-4 pb-16 pt-24 sm:px-6">
-      <RevealSection className="relative z-10 mx-auto max-w-6xl">
-        <div className="grid items-center gap-10 md:grid-cols-[1.2fr_0.8fr] lg:gap-16">
-          <div>
+    <section id="hero" className="relative flex min-h-[100dvh] items-center overflow-hidden pb-16 pt-24">
+      <RevealSection className="relative z-10 w-full">
+        <Container className="desktop-container max-w-[78rem]">
+          <div className="grid items-center gap-10 md:grid-cols-[1.2fr_0.8fr] lg:gap-16">
+            <div>
             <p className="font-mono text-sm font-semibold text-blue-700 dark:text-blue-400">
               {copy.greeting}
             </p>
-            <h1 className="mt-2 font-display text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-5xl lg:text-6xl">
+            <h1 className="mt-2 font-display text-[clamp(2rem,6.27vw,4.0125rem)] font-extrabold leading-none tracking-tight text-slate-900 dark:text-white">
               Dicky Alfian Irvansyah
             </h1>
             <p className="mt-3 inline-block max-w-full break-words rounded-lg border border-border bg-card/80 px-3 py-1.5 font-mono text-[12px] text-slate-600 dark:text-slate-300 sm:text-xs">
@@ -60,25 +62,26 @@ export function Hero({ copy, lang }: HeroProps) {
                 {copy.ctaCv}
               </a>
             </div>
-          </div>
-
-          <div className="mx-auto w-full max-w-[26rem]">
-            <div className="relative aspect-[4/5]">
-              <div className="home-portrait-halo" aria-hidden="true" />
-              <Image
-                src="/home-portrait.png"
-                alt="Dicky Alfian Irvansyah"
-                fill
-                priority
-                sizes="(max-width: 768px) 85vw, 416px"
-                className="z-10 object-contain object-bottom"
-              />
             </div>
-            <p className="mx-auto mt-3 w-fit font-mono text-[12px] font-medium tracking-wide text-muted-foreground sm:text-xs">
-              {copy.major}
-            </p>
+
+            <div className="mx-auto w-full max-w-[26rem]">
+              <div className="relative aspect-[4/5]">
+                <div className="home-portrait-halo" aria-hidden="true" />
+                <Image
+                  src="/home-portrait.png"
+                  alt="Dicky Alfian Irvansyah"
+                  fill
+                  priority
+                  sizes="(max-width: 768px) 85vw, 416px"
+                  className="z-10 object-contain object-bottom"
+                />
+              </div>
+              <p className="mx-auto mt-3 w-fit font-mono text-[12px] font-medium tracking-wide text-muted-foreground sm:text-xs">
+                {copy.major}
+              </p>
+            </div>
           </div>
-        </div>
+        </Container>
       </RevealSection>
     </section>
   );

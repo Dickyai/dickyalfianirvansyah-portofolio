@@ -3,6 +3,7 @@
 import { ChevronLeft, ExternalLink, Sparkles } from 'lucide-react';
 import { GithubIcon } from '../icons/SocialIcons';
 import { ProjectMediaGallery } from './ProjectMediaGallery';
+import { Container } from '../common/Container';
 import { STATUS_BADGE_STYLES, getStatusLabel } from './projectStatusStyles';
 import type { Project } from '../../types/project';
 import type { LangCode, Translation } from '../../i18n/types';
@@ -16,7 +17,7 @@ interface ProjectDetailProps {
 
 export function ProjectDetail({ project, lang, copy, onBack }: ProjectDetailProps) {
   return (
-    <div className="pt-32 pb-24 px-4 sm:px-6 max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-6 duration-400">
+    <Container className="max-w-[59rem] pt-32 pb-24 animate-in fade-in slide-in-from-bottom-6 duration-400">
       <button
         type="button"
         onClick={onBack}
@@ -29,7 +30,7 @@ export function ProjectDetail({ project, lang, copy, onBack }: ProjectDetailProp
 
       <ProjectMediaGallery media={project.media} thumbType={project.thumbType} />
 
-      <h1 className="font-display text-3xl md:text-5xl font-extrabold text-slate-900 dark:text-white mb-4">
+      <h1 className="mb-4 font-display text-[clamp(1.875rem,5.02vw,3.21rem)] font-extrabold leading-none text-slate-900 dark:text-white">
         {project.title}
       </h1>
 
@@ -65,10 +66,10 @@ export function ProjectDetail({ project, lang, copy, onBack }: ProjectDetailProp
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+      <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
         <div className="md:col-span-2 space-y-10">
           <section>
-            <h2 className="font-display text-xl sm:text-2xl font-bold mb-6 flex items-center text-slate-900 dark:text-white">
+            <h2 className="mb-6 flex items-center font-display text-[clamp(1.25rem,2.52vw,1.605rem)] font-bold leading-[1.333] text-slate-900 dark:text-white">
               <span className="w-6 h-1 bg-blue-600 dark:bg-blue-400 mr-3 block rounded-full" aria-hidden="true"></span>
               {copy.goalsHeading}
             </h2>
@@ -123,6 +124,6 @@ export function ProjectDetail({ project, lang, copy, onBack }: ProjectDetailProp
           )}
         </div>
       </div>
-    </div>
+    </Container>
   );
 }

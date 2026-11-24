@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { RevealSection } from '../components/common/RevealSection';
+import { Container } from '../components/common/Container';
 import PictureRailGallery, {
   type PictureRailGalleryLabels,
   type PictureRailItem,
@@ -51,15 +52,17 @@ export function Certifications({ heading, isDarkMode, lang }: CertificationsProp
   );
 
   return (
-    <RevealSection className="relative px-4 py-24 sm:px-6">
-      <PictureRailGallery
-        id="certifications"
-        items={items}
-        heading={heading}
-        labels={GALLERY_LABELS[lang]}
-        autoplay={false}
-        className="mx-auto max-w-6xl"
-      />
+    <RevealSection className="relative w-full py-16 sm:py-20 lg:py-24">
+      <Container className="desktop-container max-w-[78rem]">
+        <PictureRailGallery
+          id="certifications"
+          items={items}
+          heading={heading}
+          labels={GALLERY_LABELS[lang]}
+          autoplay={false}
+          className="w-full"
+        />
+      </Container>
     </RevealSection>
   );
 }

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Search, ArrowUpRight, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RevealSection } from '../components/common/RevealSection';
+import { Container } from '../components/common/Container';
 import { ProjectCardThumbnail } from '../components/project/ProjectCardThumbnail';
 import { STATUS_BADGE_STYLES, getStatusLabel } from '../components/project/projectStatusStyles';
 import { PROJECTS } from '../data/projects';
@@ -43,15 +44,16 @@ export function Projects({ heading, searchCopy, statusLabels, lang, onSelectProj
   return (
     <section
       id="projects"
-      className="relative px-4 py-24 sm:px-6"
+      className="relative py-16 sm:py-20 lg:py-24"
     >
-      <RevealSection className="max-w-6xl mx-auto relative z-10">
+      <RevealSection className="relative z-10 w-full">
+        <Container className="desktop-container max-w-[78rem]">
         {/* Section Header & Search Row */}
         <div className="mb-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
-            <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+            <h2 className="font-display text-[clamp(1.605rem,3.77vw,2.4075rem)] font-extrabold leading-[1.111] tracking-tight text-slate-900 dark:text-white">
               {heading}{' '}
-              <span className="text-blue-600 dark:text-blue-400 font-mono text-2xl sm:text-3xl font-bold">
+              <span className="font-mono text-[clamp(1.605rem,3.14vw,2.00625rem)] font-bold leading-[1.2] text-blue-600 dark:text-blue-400">
                 ({PROJECTS.length})
               </span>
             </h2>
@@ -143,7 +145,7 @@ export function Projects({ heading, searchCopy, statusLabels, lang, onSelectProj
 
                     <div className="pt-4">
                       <div className="flex items-start justify-between gap-3">
-                        <h3 className="font-display text-lg font-bold leading-snug text-slate-900 transition-colors group-hover:text-blue-700 dark:text-white dark:group-hover:text-blue-300">
+                        <h3 className="font-display text-[clamp(1rem,1.88vw,1.20375rem)] font-bold leading-snug text-slate-900 transition-colors group-hover:text-blue-700 dark:text-white dark:group-hover:text-blue-300">
                           {project.title}
                         </h3>
                         <ArrowUpRight className="mt-1 h-4 w-4 shrink-0 text-slate-400 transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400" aria-hidden="true" />
@@ -176,6 +178,7 @@ export function Projects({ heading, searchCopy, statusLabels, lang, onSelectProj
             )}
           </AnimatePresence>
         </motion.div>
+        </Container>
       </RevealSection>
     </section>
   );

@@ -258,8 +258,7 @@
 
 .parallax__header {
   position: relative;
-  height: 100vh;
-  height: 100svh;
+  height: 100dvh;
   overflow: hidden;
   background: var(--bg);
 }
@@ -412,6 +411,52 @@ h1,
 h2,
 h3 {
   text-wrap: balance;
+}
+
+.nav-flip-link {
+  transform-style: preserve-3d;
+  transform-origin: center bottom;
+}
+
+.nav-flip-link::after {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  content: attr(data-label);
+  font-weight: 700;
+  opacity: 0;
+  transform: rotateX(90deg);
+  transform-origin: center top;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  pointer-events: none;
+}
+
+.nav-flip-link > span {
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  transform-origin: center bottom;
+}
+
+.nav-flip-link:hover > span {
+  opacity: 0;
+  transform: rotateX(-90deg);
+}
+
+.nav-flip-link:hover::after {
+  opacity: 1;
+  transform: rotateX(0);
+}
+
+@media (max-width: 1023px) {
+  p {
+    @apply max-w-prose text-pretty leading-[1.65];
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .desktop-container {
+    margin-inline: -1.5rem;
+  }
 }
 
 /* ==========================================================================

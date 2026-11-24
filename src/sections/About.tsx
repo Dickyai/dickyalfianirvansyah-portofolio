@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import type { PointerEvent } from 'react';
 import { RevealSection } from '../components/common/RevealSection';
+import { Container } from '../components/common/Container';
 import type { Translation } from '../i18n/types';
 
 interface AboutProps {
@@ -24,7 +25,7 @@ export function About({ copy }: AboutProps) {
   return (
     <section
       id="about"
-      className="relative isolate overflow-hidden px-4 py-24 sm:px-6"
+      className="relative isolate overflow-hidden py-16 sm:py-20 lg:py-24"
       onPointerEnter={(event) => {
         if (event.pointerType !== 'touch') setSpotlightActive(true);
       }}
@@ -37,11 +38,12 @@ export function About({ copy }: AboutProps) {
         aria-hidden="true"
       />
 
-      <RevealSection className="relative z-10 mx-auto max-w-6xl">
+      <RevealSection className="relative z-10 w-full">
+        <Container className="desktop-container max-w-[78rem]">
         <div className="border-y border-border/80 py-10 sm:py-12">
           <div className="grid gap-8 lg:grid-cols-[minmax(0,0.72fr)_minmax(0,1.28fr)] lg:gap-16">
             <div className="flex flex-col">
-            <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+            <h2 className="font-display text-[clamp(1.605rem,3.77vw,2.4075rem)] font-extrabold leading-[1.111] tracking-tight text-slate-900 dark:text-white">
               {copy.heading}
             </h2>
 
@@ -63,12 +65,13 @@ export function About({ copy }: AboutProps) {
             </div>
 
             <div className="space-y-5 font-body text-sm leading-relaxed text-slate-700 dark:text-slate-300 sm:text-base sm:leading-7">
-              <p className="text-justify">{copy.p1}</p>
-              <p className="text-justify">{copy.p2}</p>
-              <p className="text-justify">{copy.p3}</p>
+              <p className="text-left lg:text-justify">{copy.p1}</p>
+              <p className="text-left lg:text-justify">{copy.p2}</p>
+              <p className="text-left lg:text-justify">{copy.p3}</p>
             </div>
           </div>
         </div>
+        </Container>
       </RevealSection>
     </section>
   );

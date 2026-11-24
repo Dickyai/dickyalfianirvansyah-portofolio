@@ -1,7 +1,9 @@
 'use client';
 
-import { motion, AnimatePresence, Variants } from 'framer-motion';
+import { useEffect, useRef } from 'react';
+import { motion, type Variants } from 'framer-motion';
 import { Download, Menu, Moon, Sun, X } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import { useLenis } from '../common/LenisProvider';
 import type { LangCode } from '../../i18n/types';
 
@@ -19,16 +21,6 @@ interface NavbarProps {
 }
 
 // --- Animasi 3D Hover & Glow ---
-const itemVariants: Variants = {
-  initial: { rotateX: 0, opacity: 1 },
-  hover: { rotateX: -90, opacity: 0 },
-};
-
-const backVariants: Variants = {
-  initial: { rotateX: 90, opacity: 0 },
-  hover: { rotateX: 0, opacity: 1 },
-};
-
 const glowVariants: Variants = {
   initial: { opacity: 0, scale: 0.8 },
   hover: {
@@ -39,13 +31,6 @@ const glowVariants: Variants = {
       scale: { duration: 0.5, type: 'spring', stiffness: 300, damping: 25 },
     },
   },
-};
-
-const sharedTransition = {
-  type: 'spring' as const,
-  stiffness: 100,
-  damping: 20,
-  duration: 0.5,
 };
 
 export function Navbar({
@@ -61,6 +46,11 @@ export function Navbar({
   cvDownloadUrl,
 }: NavbarProps) {
   const lenis = useLenis();
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const brandRef = useRef<HTMLAnchorElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const toggleMobileMenuRef = useRef(onToggleMobileMenu);
+  toggleMobileMenuRef.current = onToggleMobileMenu;
   const navItems = [
     { href: '#hero', label: 'HOME' },
     { href: '#about', label: 'ABOUT' },
@@ -68,6 +58,65 @@ export function Navbar({
     { href: '#projects', label: 'PROJECTS' },
     { href: '#certifications', label: 'CERTIFICATIONS' },
   ];
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+
+    const drawer = drawerRef.current;
+    if (!drawer) return;
+    const menuButton = menuButtonRef.current;
+    const brand = brandRef.current;
+    const desktopBreakpoint = window.matchMedia('(min-width: 64rem)');
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    lenis?.stop();
+
+    const getFocusableElements = () =>
+      drawer.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+
+    getFocusableElements()[0]?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        toggleMobileMenuRef.current();
+        return;
+      }
+
+      if (event.key !== 'Tab') return;
+
+      const focusableElements = getFocusableElements();
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault();
+        lastElement?.focus();
+      } else if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement?.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    const closeOnDesktop = () => {
+      if (desktopBreakpoint.matches) toggleMobileMenuRef.current();
+    };
+    desktopBreakpoint.addEventListener('change', closeOnDesktop);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      desktopBreakpoint.removeEventListener('change', closeOnDesktop);
+      document.body.style.overflow = previousOverflow;
+      lenis?.start();
+      if (desktopBreakpoint.matches) brand?.focus();
+      else menuButton?.focus();
+    };
+  }, [isMobileMenuOpen, lenis]);
 
   const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
@@ -90,13 +139,99 @@ export function Navbar({
     });
   };
 
+  const navMenu = (
+    <motion.div
+      ref={drawerRef}
+      id="mobile-nav-drawer"
+      role={isMobileMenuOpen ? 'dialog' : undefined}
+      aria-modal={isMobileMenuOpen || undefined}
+      aria-label={isMobileMenuOpen ? 'Primary navigation' : undefined}
+      initial={isMobileMenuOpen ? { opacity: 0 } : undefined}
+      animate={isMobileMenuOpen ? { opacity: 1 } : undefined}
+      transition={{ duration: 0.2 }}
+      className={`pointer-events-auto ${
+        isMobileMenuOpen
+          ? `fixed bottom-0 left-[env(safe-area-inset-left)] right-[env(safe-area-inset-right)] z-[60] flex max-h-[85dvh] flex-col space-y-2 overflow-y-auto rounded-t-3xl p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] font-mono text-sm shadow-2xl lg:hidden ${
+              isOnCover ? 'border border-white/10 bg-slate-950/95 text-white' : 'glass-panel border border-slate-200 dark:border-slate-800'
+            }`
+          : `hidden items-center gap-1 rounded-full p-1 backdrop-blur-md lg:flex ${
+              isOnCover
+                ? 'border border-white/15 bg-white/10'
+                : 'border border-border bg-muted/80 dark:bg-card/80'
+            }`
+      }`}
+    >
+      {navItems.map((item, index) => (
+        <motion.div
+          key={item.href}
+          className={`group relative block cursor-pointer overflow-visible ${
+            isMobileMenuOpen ? 'w-full rounded-xl' : 'rounded-full'
+          }`}
+          style={{ perspective: '600px' }}
+          initial="initial"
+          whileHover="hover"
+        >
+          <motion.div
+            className="absolute inset-0 z-0 pointer-events-none rounded-full"
+            variants={glowVariants}
+            style={{
+              background: 'radial-gradient(circle, rgba(59,130,246,0.15) 0%, rgba(37,99,235,0.06) 50%, rgba(29,78,216,0) 100%)',
+              opacity: 0,
+            }}
+          />
+
+          <motion.a
+            href={item.href}
+            onClick={(e) => {
+              handleSmoothScroll(e, item.href);
+              if (isMobileMenuOpen) onToggleMobileMenu();
+            }}
+            data-label={isMobileMenuOpen ? undefined : item.label}
+            initial={isMobileMenuOpen ? { opacity: 0, x: -10 } : undefined}
+            animate={isMobileMenuOpen ? { opacity: 1, x: 0 } : undefined}
+            transition={isMobileMenuOpen ? { delay: index * 0.05 } : undefined}
+            className={
+              isMobileMenuOpen
+                ? `flex min-h-11 w-full items-center rounded-xl px-4 py-3 font-medium transition-colors ${
+                    isOnCover
+                      ? 'text-slate-100 hover:bg-white/10 hover:text-white'
+                      : 'text-slate-800 hover:bg-muted hover:text-accent dark:text-slate-200 dark:hover:bg-card-elevated'
+                  }`
+                : `nav-flip-link relative z-10 flex items-center justify-center rounded-full bg-transparent px-3.5 py-1.5 text-xs font-mono font-medium ${
+                    isOnCover ? 'text-white/80 group-hover:text-white' : 'text-slate-600 dark:text-slate-300 group-hover:text-slate-950 dark:group-hover:text-white'
+                  }`
+            }
+          >
+            {item.label}
+          </motion.a>
+        </motion.div>
+      ))}
+
+      {isMobileMenuOpen && (
+        <div className="border-t border-border pt-2">
+          <a
+            href={cvDownloadUrl}
+            download
+            target="_blank"
+            rel="noreferrer"
+            onClick={onToggleMobileMenu}
+            className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-accent py-3 font-mono text-xs font-bold text-accent-foreground shadow-md transition-colors hover:bg-accent-hover"
+          >
+            <Download className="h-4 w-4" />
+            <span>DOWNLOAD RESUME (CV)</span>
+          </a>
+        </div>
+      )}
+    </motion.div>
+  );
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 sm:px-6 py-4 pointer-events-none transition-all duration-300">
+    <header className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-[calc(1rem+env(safe-area-inset-top))] pb-4 pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))] pointer-events-none transition-all duration-300 sm:pl-[calc(1.5rem+env(safe-area-inset-left))] sm:pr-[calc(1.5rem+env(safe-area-inset-right))]">
       <motion.nav
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
-        className={`pointer-events-auto w-full max-w-6xl mx-auto rounded-full transition-all duration-500 ${
+        className={`pointer-events-auto relative z-20 mx-auto w-full max-w-6xl rounded-full transition-all duration-500 ${
           isOnCover
             ? 'bg-slate-950/30 backdrop-blur-md shadow-lg shadow-black/10 border border-white/15 py-2.5 px-4 sm:px-6'
             : isScrolled
@@ -107,6 +242,7 @@ export function Navbar({
         <div className="flex items-center justify-between">
           {/* Logo / Brand */}
           <a
+            ref={brandRef}
             href="#parallax-cover"
             onClick={(e) => {
               e.preventDefault();
@@ -120,7 +256,7 @@ export function Navbar({
                 });
               }
             }}
-            className={`font-display font-extrabold text-lg sm:text-xl tracking-tight cursor-pointer flex items-center gap-2 group ${
+            className={`flex min-h-11 items-center gap-2 font-display text-lg font-extrabold tracking-tight sm:text-xl ${
               isOnCover ? 'text-white' : 'text-slate-900 dark:text-white'
             }`}
           >
@@ -129,72 +265,10 @@ export function Navbar({
             </span>
           </a>
 
-          {/* Desktop Navigation Links (ANIMASI 3D HOVER) */}
-          <div className={`hidden md:flex items-center gap-1 p-1 rounded-full backdrop-blur-md ${
-            isOnCover
-              ? 'bg-white/10 border border-white/15'
-              : 'bg-muted/80 dark:bg-card/80 border border-border'
-          }`}>
-            {navItems.map((item) => (
-              <motion.div
-                key={item.href}
-                className="relative block rounded-full overflow-visible group cursor-pointer"
-                style={{ perspective: '600px' }}
-                initial="initial"
-                whileHover="hover"
-              >
-                {/* Backlight / Glow Effect (Biru menyesuaikan tema Anda) */}
-                <motion.div
-                  className="absolute inset-0 z-0 pointer-events-none rounded-full"
-                  variants={glowVariants}
-                  style={{
-                    background: 'radial-gradient(circle, rgba(59,130,246,0.15) 0%, rgba(37,99,235,0.06) 50%, rgba(29,78,216,0) 100%)',
-                    opacity: 0,
-                  }}
-                />
-                
-                {/* Wajah Depan (Saat Idle) */}
-                <motion.a
-                  href={item.href}
-                  onClick={(e) => handleSmoothScroll(e, item.href)}
-                  className={`flex items-center justify-center px-3.5 py-1.5 relative z-10 bg-transparent ${
-                    isOnCover ? 'text-white/80 group-hover:text-white' : 'text-slate-600 dark:text-slate-300 group-hover:text-slate-950 dark:group-hover:text-white'
-                  } transition-colors rounded-full text-xs font-mono font-medium`}
-                  variants={itemVariants}
-                  transition={sharedTransition}
-                  style={{
-                    transformStyle: 'preserve-3d',
-                    transformOrigin: 'center bottom'
-                  }}
-                >
-                  <span className="relative z-10">{item.label}</span>
-                </motion.a>
-
-                {/* Wajah Belakang (Muncul berputar dari bawah saat di-hover) */}
-                <motion.a
-                  href={item.href}
-                  onClick={(e) => handleSmoothScroll(e, item.href)}
-                  aria-hidden="true"
-                  tabIndex={-1}
-                  className={`flex items-center justify-center px-3.5 py-1.5 absolute inset-0 z-10 bg-transparent ${
-                    isOnCover ? 'text-white' : 'text-slate-900 dark:text-white'
-                  } transition-colors rounded-full text-xs font-mono font-medium drop-shadow-md`}
-                  variants={backVariants}
-                  transition={sharedTransition}
-                  style={{
-                    transformStyle: 'preserve-3d',
-                    transformOrigin: 'center top',
-                    transform: 'rotateX(90deg)'
-                  }}
-                >
-                  <span className="relative z-10 font-bold">{item.label}</span>
-                </motion.a>
-              </motion.div>
-            ))}
-          </div>
+          {!isMobileMenuOpen && navMenu}
 
           {/* Controls: Language, Theme & Menu Mobile */}
-          <div className="flex items-center space-x-2 sm:space-x-3">
+          <div className="flex items-center space-x-1 sm:space-x-3">
             {/* Lang switcher */}
             <div className={`flex items-center rounded-full border p-0.5 font-mono text-[11px] font-bold tracking-wider ${
               isOnCover
@@ -205,7 +279,7 @@ export function Navbar({
                 onClick={() => onLangChange('id')}
                 aria-label="Bahasa Indonesia"
                 aria-pressed={lang === 'id'}
-                className={`px-2 py-1 rounded-full transition-all duration-200 min-h-[32px] min-w-[32px] sm:min-h-0 sm:min-w-0 flex items-center justify-center ${
+                className={`flex min-h-11 min-w-11 items-center justify-center rounded-full px-2 py-1 transition-all duration-200 lg:min-h-0 lg:min-w-0 ${
                   lang === 'id'
                     ? isOnCover
                       ? 'bg-white/20 text-white shadow-sm'
@@ -221,7 +295,7 @@ export function Navbar({
                 onClick={() => onLangChange('en')}
                 aria-label="English"
                 aria-pressed={lang === 'en'}
-                className={`px-2 py-1 rounded-full transition-all duration-200 min-h-[32px] min-w-[32px] sm:min-h-0 sm:min-w-0 flex items-center justify-center ${
+                className={`flex min-h-11 min-w-11 items-center justify-center rounded-full px-2 py-1 transition-all duration-200 lg:min-h-0 lg:min-w-0 ${
                   lang === 'en'
                     ? isOnCover
                       ? 'bg-white/20 text-white shadow-sm'
@@ -262,8 +336,9 @@ export function Navbar({
 
             {/* Mobile menu toggle */}
             <button
+              ref={menuButtonRef}
               onClick={onToggleMobileMenu}
-              className={`md:hidden p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full border ${
+              className={`flex min-h-11 min-w-11 items-center justify-center rounded-full border p-2 lg:hidden ${
                 isOnCover
                   ? 'bg-white/10 border-white/20 text-white'
                   : 'bg-muted dark:bg-card border-border text-slate-700 dark:text-slate-200'
@@ -278,56 +353,21 @@ export function Navbar({
         </div>
       </motion.nav>
 
-      {/* Mobile Drawer Menu (TETAP SAMA SEPERTI SEBELUMNYA) */}
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <motion.div
-            id="mobile-nav-drawer"
-            initial={{ opacity: 0, y: -10, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.98 }}
-            transition={{ duration: 0.2 }}
-            className={`pointer-events-auto md:hidden absolute top-20 left-4 right-4 rounded-2xl p-5 ${
-              isOnCover ? 'bg-slate-950/95 border border-white/10 text-white' : 'glass-panel border border-slate-200 dark:border-slate-800'
-            } shadow-2xl flex flex-col space-y-2 font-mono text-sm`}
-          >
-            {navItems.map((item, idx) => (
-              <motion.a
-                key={item.href}
-                href={item.href}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.05 }}
-                onClick={(e) => {
-                  handleSmoothScroll(e, item.href);
-                  onToggleMobileMenu();
-                }}
-                className={`px-4 py-3 min-h-[44px] flex items-center rounded-xl font-medium transition-colors ${
-                  isOnCover
-                    ? 'text-slate-100 hover:bg-white/10 hover:text-white'
-                    : 'hover:bg-muted dark:hover:bg-card-elevated text-slate-800 dark:text-slate-200 hover:text-accent'
-                }`}
-              >
-                {item.label}
-              </motion.a>
-            ))}
-
-            <div className="pt-2 border-t border-border">
-              <a
-                href={cvDownloadUrl}
-                download
-                target="_blank"
-                rel="noreferrer"
-                onClick={onToggleMobileMenu}
-                className="flex items-center justify-center gap-2 w-full min-h-[44px] py-3 rounded-xl bg-accent text-accent-foreground font-mono text-xs font-bold shadow-md hover:bg-accent-hover transition-colors"
-              >
-                <Download className="w-4 h-4" />
-                <span>DOWNLOAD RESUME (CV)</span>
-              </a>
-            </div>
-          </motion.div>
+      {isMobileMenuOpen &&
+        createPortal(
+          <>
+            <motion.button
+              type="button"
+              aria-label="Close navigation"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="pointer-events-auto fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
+              onClick={onToggleMobileMenu}
+            />
+            {navMenu}
+          </>,
+          document.body,
         )}
-      </AnimatePresence>
     </header>
   );
 }

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Target, Boxes, BarChart3, Activity, Cpu, BookOpen, X, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RevealSection } from '../components/common/RevealSection';
+import { Container } from '../components/common/Container';
 import { useLenis } from '../components/common/LenisProvider';
 import type { Translation, CoreCompetencyItem } from '../i18n/types';
 import { PROJECTS } from '../data/projects'; // Import untuk memetakan nama project
@@ -59,11 +60,12 @@ export function CoreCompetencies({ copy }: CoreCompetenciesProps) {
   return (
     <section
       id="competencies"
-      className="relative px-4 py-20 sm:px-6"
+      className="relative py-16 sm:py-20 lg:py-20"
     >
-      <RevealSection className="mx-auto max-w-6xl">
+      <RevealSection className="w-full">
+        <Container className="desktop-container max-w-[78rem]">
         <div className="mb-8 border-b border-border/80 pb-5">
-          <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+          <h2 className="font-display text-[clamp(1.605rem,3.77vw,2.4075rem)] font-extrabold leading-[1.111] tracking-tight text-slate-900 dark:text-white">
             {copy.heading}
           </h2>
         </div>
@@ -86,7 +88,7 @@ export function CoreCompetencies({ copy }: CoreCompetenciesProps) {
 
                 <span className="min-w-0 flex-1">
                   <span className="mb-1 flex items-center justify-between gap-3">
-                    <span role="heading" aria-level={3} className="font-display text-base font-bold leading-snug text-slate-900 transition-colors group-hover:text-blue-700 dark:text-white dark:group-hover:text-blue-300 sm:text-lg">
+                    <span role="heading" aria-level={3} className="font-display text-[clamp(1rem,1.88vw,1.20375rem)] font-bold leading-snug text-slate-900 transition-colors group-hover:text-blue-700 dark:text-white dark:group-hover:text-blue-300">
                       {item.title}
                     </span>
                     <span className="shrink-0 font-mono text-[11px] text-slate-400 dark:text-slate-500">
@@ -111,6 +113,7 @@ export function CoreCompetencies({ copy }: CoreCompetenciesProps) {
             );
           })}
         </div>
+        </Container>
       </RevealSection>
 
       {/* Side Drawer / Modal Detail */}
@@ -163,10 +166,10 @@ export function CoreCompetencies({ copy }: CoreCompetenciesProps) {
               {/* Konten Utama */}
               <div className="p-6 sm:p-8 flex-1 flex flex-col gap-8">
                 <div>
-                  <h3 id="comp-dialog-title" className="font-display text-2xl font-extrabold text-slate-900 dark:text-white mb-3 leading-tight">
+                  <h3 id="comp-dialog-title" className="mb-3 font-display text-[clamp(1.375rem,2.52vw,1.605rem)] font-extrabold leading-tight text-slate-900 dark:text-white">
                     {selectedComp.data.title}
                   </h3>
-                  <p className="font-body text-[16px] leading-relaxed text-justify text-slate-600 dark:text-slate-300">
+                  <p className="font-body text-[16px] leading-relaxed text-left text-slate-600 dark:text-slate-300 lg:text-justify">
                     {selectedComp.data.description}
                   </p>
                 </div>

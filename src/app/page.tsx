@@ -92,7 +92,7 @@ export default function PortfolioApp() {
   };
 
   return (
-    <div className="relative isolate min-h-screen overflow-x-clip bg-background text-foreground font-sans selection:bg-accent selection:text-accent-foreground transition-colors duration-500">
+    <div className="relative isolate min-h-[100dvh] overflow-x-clip bg-background text-foreground font-sans selection:bg-accent selection:text-accent-foreground transition-colors duration-500">
       <DataRain
         className="portfolio-data-rain"
         count={1400}
@@ -116,7 +116,7 @@ export default function PortfolioApp() {
           cvDownloadUrl={CV_DOWNLOAD_URL}
         />
 
-        <main className="min-h-screen">
+        <main className="min-h-[100dvh]">
           {selectedProject ? (
             <ProjectDetail project={selectedProject} lang={lang} copy={t.detail} onBack={handleBackToProjects} />
           ) : (

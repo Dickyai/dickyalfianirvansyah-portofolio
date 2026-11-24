@@ -6,6 +6,7 @@ import { ArrowUpRight, Check, Mail, Send } from 'lucide-react';
 import type { ComponentType } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RevealSection } from '../components/common/RevealSection';
+import { Container } from '../components/common/Container';
 import { SOCIAL_ICON_MAP } from '../components/icons/SocialIcons';
 import { CONTACT_LINKS } from '../data/contact';
 import type { ContactIconKey } from '../types/contact';
@@ -84,17 +85,18 @@ export function Contact({ sectionCopy, formCopy }: ContactProps) {
   return (
     <section
       id="contact"
-      className="relative px-4 py-24 sm:px-6"
+      className="relative py-16 sm:py-20 lg:py-24"
     >
-      <RevealSection className="max-w-6xl mx-auto relative z-10">
+      <RevealSection className="relative z-10 w-full">
+        <Container className="desktop-container max-w-[78rem]">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           {/* Left Column: Direct Channel Information & Socials */}
           <div className="lg:col-span-6 space-y-8">
             <div>
-              <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-4">
+              <h2 className="mb-4 font-display text-[clamp(1.605rem,3.77vw,2.4075rem)] font-extrabold leading-[1.111] tracking-tight text-slate-900 dark:text-white">
                 {sectionCopy.heading}
               </h2>
-              <p className="font-body text-slate-600 dark:text-slate-400 leading-relaxed text-sm sm:text-base max-w-lg text-justify">
+              <p className="max-w-lg text-left font-body text-sm leading-relaxed text-slate-600 dark:text-slate-400 sm:text-base lg:text-justify">
                 {sectionCopy.description}
               </p>
             </div>
@@ -133,7 +135,7 @@ export function Contact({ sectionCopy, formCopy }: ContactProps) {
           {/* Right Column: Interactive Contact Form */}
           <div className="lg:col-span-6">
             <div className="border-t border-border/80 pt-6 sm:pt-8">
-              <h3 className="mb-6 font-display text-xl font-bold text-slate-900 dark:text-white sm:text-2xl">
+              <h3 className="mb-6 font-display text-[clamp(1.3375rem,2.52vw,1.605rem)] font-bold leading-[1.333] text-slate-900 dark:text-white">
                 {formCopy.secureHeading}
               </h3>
 
@@ -254,6 +256,7 @@ export function Contact({ sectionCopy, formCopy }: ContactProps) {
               </div>
           </div>
         </div>
+        </Container>
       </RevealSection>
     </section>
   );
